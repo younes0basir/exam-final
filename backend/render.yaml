@@ -25,6 +25,8 @@ services:
         value: railway
       - key: DB_USERNAME
         value: root
+      - key: DB_PASSWORD
+        sync: false  # You MUST set this manually in Render dashboard
       - key: SESSION_DRIVER
         value: cookie
       - key: CACHE_STORE
