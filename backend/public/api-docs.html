@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPF University API Documentation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fa;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .base-url {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 30px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .base-url code {
+            background: #f0f0f0;
+            padding: 10px 15px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .section {
+            background: white;
+            margin: 30px 0;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .endpoint {
+            margin: 25px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            border-radius: 4px;
+        }
+
+        .endpoint-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .method {
+            padding: 5px 12px;
+            border-radius: 4px;
+            font-weight: bold;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+
+        .method.get { background: #61affe; color: white; }
+        .method.post { background: #49cc90; color: white; }
+        .method.patch { background: #fca130; color: white; }
+        .method.delete { background: #f93e3e; color: white; }
+
+        .endpoint-path {
+            font-family: 'Courier New', monospace;
+            font-size: 1.1em;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .endpoint-description {
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .auth-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            background: #ff6b6b;
+            color: white;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .role-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+
+        .role-badge.admin { background: #9b59b6; color: white; }
+        .role-badge.professor { background: #3498db; color: white; }
+        .role-badge.student { background: #2ecc71; color: white; }
+
+        .code-block {
+            background: #2d2d2d;
+            color: #f8f8f2;
+            padding: 20px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .code-block .comment {
+            color: #75715e;
+        }
+
+        .code-block .key {
+            color: #f92672;
+        }
+
+        .code-block .string {
+            color: #e6db74;
+        }
+
+        .code-block .number {
+            color: #ae81ff;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+
+        table th, table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .credentials {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 20px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+
+        .credentials h3 {
+            color: #856404;
+            margin-bottom: 15px;
+        }
+
+        .credential-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: white;
+            border-radius: 4px;
+        }
+
+        .credential-item strong {
+            color: #667eea;
+        }
+
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: #666;
+            margin-top: 50px;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .endpoint-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            table {
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🎓 UPF University API</h1>
+        <p>University Management System - RESTful API Documentation</p>
+    </header>
+
+    <div class="container">
+        <div class="base-url">
+            <h3>Base URL</h3>
+            <code>http://localhost:8000/api</code>
+        </div>
+
+        <div class="section">
+            <h2>🔐 Authentication</h2>
+            <p>All API endpoints (except login) require Bearer token authentication. Include the token in the Authorization header:</p>
+            <div class="code-block">
+Authorization: Bearer YOUR_TOKEN_HERE
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/api/login</span>
+                </div>
+                <p class="endpoint-description">Authenticate and receive an access token</p>
+                
+                <h4>Request Body:</h4>
+                <div class="code-block">
+{
+    <span class="key">"email"</span>: <span class="string">"admin@upf.ma"</span>,
+    <span class="key">"password"</span>: <span class="string">"password"</span>
+}
+                </div>
+
+                <h4>Response (200 OK):</h4>
+                <div class="code-block">
+{
+    <span class="key">"user"</span>: {
+        <span class="key">"id"</span>: <span class="number">1</span>,
+        <span class="key">"name"</span>: <span class="string">"Admin User"</span>,
+        <span class="key">"email"</span>: <span class="string">"admin@upf.ma"</span>,
+        <span class="key">"role"</span>: <span class="string">"admin"</span>
+    },
+    <span class="key">"token"</span>: <span class="string">"1|abc123xyz..."</span>
+}
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/user</span>
+                    <span class="auth-badge">AUTH REQUIRED</span>
+                </div>
+                <p class="endpoint-description">Get current authenticated user information</p>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/api/logout</span>
+                    <span class="auth-badge">AUTH REQUIRED</span>
+                </div>
+                <p class="endpoint-description">Logout and invalidate the current token</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>👨‍💼 Admin Endpoints</h2>
+            <span class="role-badge admin">ADMIN ROLE REQUIRED</span>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/admin/dashboard/stats</span>
+                    <span class="auth-badge">AUTH</span>
+                    <span class="role-badge admin">ADMIN</span>
+                </div>
+                <p class="endpoint-description">Get dashboard statistics including student count, professor count, modules, etc.</p>
+                
+                <h4>Response:</h4>
+                <div class="code-block">
+{
+    <span class="key">"students"</span>: <span class="number">156</span>,
+    <span class="key">"professors"</span>: <span class="number">24</span>,
+    <span class="key">"filieres"</span>: <span class="number">8</span>,
+    <span class="key">"modules"</span>: <span class="number">48</span>,
+    <span class="key">"salles"</span>: <span class="number">12</span>
+}
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/admin/users?page=1</span>
+                    <span class="auth-badge">AUTH</span>
+                    <span class="role-badge admin">ADMIN</span>
+                </div>
+                <p class="endpoint-description">List all users with pagination</p>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/api/admin/users/student</span>
+                    <span class="auth-badge">AUTH</span>
+                    <span class="role-badge admin">ADMIN</span>
+                </div>
+                <p class="endpoint-description">Create a new student account</p>
+                
+                <h4>Request Body:</h4>
+                <div class="code-block">
+{
+    <span class="key">"name"</span>: <span class="string">"John Doe"</span>,
+    <span class="key">"email"</span>: <span class="string">"john@student.upf.ma"</span>,
+    <span class="key">"password"</span>: <span class="string">"password123"</span>
+}
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/admin/academic/filieres</span>
+                    <span class="auth-badge">AUTH</span>
+                    <span class="role-badge admin">ADMIN</span>
+                </div>
+                <p class="endpoint-description">List all academic programs (filières)</p>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/admin/timetable?view=all&professor_id=1</span>
+                    <span class="auth-badge">AUTH</span>
+                    <span class="role-badge admin">ADMIN</span>
+                </div>
+                <p class="endpoint-description">View timetables with optional filters (view, professor_id, filiere_id, groupe_id, module_id)</p>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/admin/requests?page=1</span>
+                    <span class="auth-badge">AUTH</span>
+                    <span class="role-badge admin">ADMIN</span>
+                </div>
+                <p class="endpoint-description">List administrative document requests</p>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method patch">PATCH</span>
+                    <span class="endpoint-path">/api/admin/requests/{id}</span>
+                    <span class="auth-badge">AUTH</span>
+                    <span class="role-badge admin">ADMIN</span>
+                </div>
+                <p class="endpoint-description">Update request status (validate or reject)</p>
+                
+                <h4>Request Body:</h4>
+                <div class="code-block">
+{
+    <span class="key">"statut"</span>: <span class="string">"validated"</span>,
+    <span class="key">"motif_rejet"</span>: <span class="string">null</span>
+}
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>👨‍🏫 Professor Endpoints</h2>
+            <span class="role-badge professor">PROFESSOR ROLE REQUIRED</span>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/professor/dashboard/stats</span>
+                    <span class="auth-badge">AUTH</span>
+                    <span class="role-badge professor">PROFESSOR</span>
+                </div>
+                <p class="endpoint-description">Get professor dashboard statistics</p>
+                
+                <h4>Response:</h4>
+                <div class="code-block">
+{
+    <span class="key">"modules_count"</span>: <span class="number">5</span>,
+    <span class="key">"pending_notes"</span>: <span class="number">12</span>
+}
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/professor/modules</span>
+                    <span class="auth-badge">AUTH</span>
+                    <span class="role-badge professor">PROFESSOR</span>
+                </div>
+                <p class="endpoint-description">List all modules assigned to the professor</p>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/professor/grades/{moduleId}</span>
+                    <span class="auth-badge">AUTH</span>
+                    <span class="role-badge professor">PROFESSOR</span>
+                </div>
+                <p class="endpoint-description">Get students and existing grades for a specific module</p>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/api/professor/grades/{moduleId}</span>
+                    <span class="auth-badge">AUTH</span>
+                    <span class="role-badge professor">PROFESSOR</span>
+                </div>
+                <p class="endpoint-description">Save or update grades for students in a module</p>
+                
+                <h4>Request Body:</h4>
+                <div class="code-block">
+{
+    <span class="key">"grades"</span>: {
+        <span class="string">"1"</span>: {
+            <span class="key">"cc1"</span>: <span class="number">15.5</span>,
+            <span class="key">"cc2"</span>: <span class="number">16.0</span>,
+            <span class="key">"final"</span>: <span class="number">15.75</span>
+        }
+    }
+}
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/professor/session-log?page=1</span>
+                    <span class="auth-badge">AUTH</span>
+                    <span class="role-badge professor">PROFESSOR</span>
+                </div>
+                <p class="endpoint-description">View session logs (cahier de textes)</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🎓 Student Endpoints</h2>
+            <span class="role-badge student">STUDENT ROLE REQUIRED</span>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/student/dashboard/stats</span>
+                    <span class="auth-badge">AUTH</span>
+                    <span class="role-badge student">STUDENT</span>
+                </div>
+                <p class="endpoint-description">Get student dashboard statistics</p>
+                
+                <h4>Response:</h4>
+                <div class="code-block">
+{
+    <span class="key">"average"</span>: <span class="number">14.5</span>,
+    <span class="key">"absences"</span>: <span class="number">3</span>,
+    <span class="key">"modules"</span>: <span class="number">6</span>
+}
+                </div>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/student/results</span>
+                    <span class="auth-badge">AUTH</span>
+                    <span class="role-badge student">STUDENT</span>
+                </div>
+                <p class="endpoint-description">View all grades and results</p>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/student/timetable</span>
+                    <span class="auth-badge">AUTH</span>
+                    <span class="role-badge student">STUDENT</span>
+                </div>
+                <p class="endpoint-description">View personal timetable</p>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/student/materials</span>
+                    <span class="auth-badge">AUTH</span>
+                    <span class="role-badge student">STUDENT</span>
+                </div>
+                <p class="endpoint-description">Access course materials and documents</p>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/student/absences?page=1</span>
+                    <span class="auth-badge">AUTH</span>
+                    <span class="role-badge student">STUDENT</span>
+                </div>
+                <p class="endpoint-description">View absence records with pagination</p>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method get">GET</span>
+                    <span class="endpoint-path">/api/student/requests</span>
+                    <span class="auth-badge">AUTH</span>
+                    <span class="role-badge student">STUDENT</span>
+                </div>
+                <p class="endpoint-description">View administrative document requests</p>
+            </div>
+
+            <div class="endpoint">
+                <div class="endpoint-header">
+                    <span class="method post">POST</span>
+                    <span class="endpoint-path">/api/student/requests</span>
+                    <span class="auth-badge">AUTH</span>
+                    <span class="role-badge student">STUDENT</span>
+                </div>
+                <p class="endpoint-description">Submit a new administrative document request</p>
+                
+                <h4>Request Body:</h4>
+                <div class="code-block">
+{
+    <span class="key">"type"</span>: <span class="string">"Attestation de scolarité"</span>,
+    <span class="key">"motif"</span>: <span class="string">"Needed for internship application"</span>
+}
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>🔑 Demo Credentials</h2>
+            <div class="credentials">
+                <h3>Test Accounts</h3>
+                
+                <div class="credential-item">
+                    <strong>Admin:</strong><br>
+                    Email: admin@upf.ma<br>
+                    Password: password
+                </div>
+
+                <div class="credential-item">
+                    <strong>Professor:</strong><br>
+                    Email: a.bennani@upf.ma<br>
+                    Password: password
+                </div>
+
+                <div class="credential-item">
+                    <strong>Student:</strong><br>
+                    Email: y.alami@student.upf.ma<br>
+                    Password: password
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>⚠️ Error Responses</h2>
+            
+            <h4>401 Unauthorized</h4>
+            <div class="code-block">
+{
+    <span class="key">"message"</span>: <span class="string">"Unauthenticated."</span>
+}
+            </div>
+
+            <h4>403 Forbidden (Wrong Role)</h4>
+            <div class="code-block">
+{
+    <span class="key">"message"</span>: <span class="string">"Unauthorized. Insufficient permissions."</span>
+}
+            </div>
+
+            <h4>422 Validation Error</h4>
+            <div class="code-block">
+{
+    <span class="key">"message"</span>: <span class="string">"The email field is required."</span>,
+    <span class="key">"errors"</span>: {
+        <span class="key">"email"</span>: [<span class="string">"The email field is required."</span>]
+    }
+}
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📝 Example Usage</h2>
+            
+            <h4>1. Login to get token:</h4>
+            <div class="code-block">
+<span class="comment"># Using cURL</span>
+curl -X POST http://localhost:8000/api/login \
+  -H <span class="string">"Content-Type: application/json"</span> \
+  -d <span class="string">'{"email":"admin@upf.ma","password":"password"}'</span>
+            </div>
+
+            <h4>2. Use token for API calls:</h4>
+            <div class="code-block">
+<span class="comment"># Include token in Authorization header</span>
+curl http://localhost:8000/api/admin/dashboard/stats \
+  -H <span class="string">"Authorization: Bearer YOUR_TOKEN_HERE"</span>
+            </div>
+
+            <h4>3. Using JavaScript (Fetch API):</h4>
+            <div class="code-block">
+<span class="comment">// Login</span>
+<span class="key">const</span> response = <span class="key">await</span> fetch(<span class="string">'/api/login'</span>, {
+    method: <span class="string">'POST'</span>,
+    headers: { <span class="string">'Content-Type'</span>: <span class="string">'application/json'</span> },
+    body: JSON.stringify({ email: <span class="string">'admin@upf.ma'</span>, password: <span class="string">'password'</span> })
+});
+
+<span class="key">const</span> data = <span class="key">await</span> response.json();
+localStorage.setItem(<span class="string">'token'</span>, data.token);
+
+<span class="comment">// Make authenticated request</span>
+<span class="key">const</span> stats = <span class="key">await</span> fetch(<span class="string">'/api/admin/dashboard/stats'</span>, {
+    headers: { <span class="string">'Authorization'</span>: <span class="string">`Bearer ${data.token}`</span> }
+});
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 UPF University Management System</p>
+        <p style="margin-top: 10px; font-size: 0.9em;">API Version 1.0 | Laravel 13.8.0</p>
+    </footer>
+</body>
+</html>

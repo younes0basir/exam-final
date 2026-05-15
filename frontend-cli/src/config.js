@@ -1,0 +1,36 @@
+import Conf from "conf";
+
+export const config = new Conf({
+  projectName: "upf-cli",
+  defaults: {
+    apiBaseUrl: "http://localhost:8000",
+    token: null,
+    user: null
+  }
+});
+
+export function getApiBaseUrl() {
+  return config.get("apiBaseUrl");
+}
+
+export function setApiBaseUrl(url) {
+  config.set("apiBaseUrl", url);
+}
+
+export function getToken() {
+  return config.get("token");
+}
+
+export function setAuth(token, user) {
+  config.set("token", token);
+  config.set("user", user ?? null);
+}
+
+export function clearAuth() {
+  config.set("token", null);
+  config.set("user", null);
+}
+
+export function getUser() {
+  return config.get("user");
+}

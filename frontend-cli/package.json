@@ -1,0 +1,23 @@
+{
+  "name": "upf-cli",
+  "version": "0.2.0",
+  "description": "CLI frontend for UPF university management API",
+  "type": "module",
+  "bin": {
+    "upf-cli": "./src/cli.js",
+    "upf": "./src/cli.js"
+  },
+  "scripts": {
+    "dev": "node ./src/cli.js",
+    "start": "node ./src/cli.js"
+  },
+  "dependencies": {
+    "axios": "^1.8.4",
+    "chalk": "^5.4.1",
+    "cli-table3": "^0.6.5",
+    "commander": "^14.0.0",
+    "conf": "^14.0.0",
+    "inquirer": "^12.6.3",
+    "ora": "^8.2.0"
+  }
+}
