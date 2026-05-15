@@ -24,14 +24,17 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Set working directory
 WORKDIR /var/www/html
 
+# Copy composer files first (for better caching)
+COPY composer.json composer.lock ./
+
+# Install dependencies
+RUN composer install --no-dev --optimize-autoloader --no-scripts --ignore-platform-reqs
+
 # Copy existing application directory contents
 COPY . /var/www/html
 
 # Copy Apache configuration
 COPY apache.conf /etc/apache2/sites-available/000-default.conf
-
-# Install dependencies
-RUN composer install --no-dev --optimize-autoloader
 
 # Generate application key
 RUN php artisan key:generate
