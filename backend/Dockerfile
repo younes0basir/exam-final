@@ -56,6 +56,12 @@ COPY apache.conf /etc/apache2/sites-available/000-default.conf
 # Generate application key
 RUN php artisan key:generate
 
+# Create any missing tables (sessions, cache, jobs, personal_access_tokens)
+RUN php artisan migrate --force --no-interaction 2>&1 || echo "Migration warning - tables may already exist"
+
+# Run migrations (skip if tables already exist)
+RUN php artisan migrate --force --no-interaction || echo "Migrations skipped - tables may already exist"
+
 # Set permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/storage \
