@@ -18,26 +18,34 @@ RUN apt-get clean && rm -rf /var/lib/apt/lists/*
 # Install PHP extensions
 RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd zip intl
 
+# Enable Apache rewrite module early
+RUN a2enmod rewrite
+
 # Get latest Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 # Set working directory
 WORKDIR /var/www/html
 
-# Copy composer files first (for better caching)
-COPY composer.json composer.lock ./
+# Copy all application files
+COPY . .
 
-# Disable platform requirements checking and set GitHub token
-ENV COMPOSER_ALLOW_SUPERUSER=1
-ENV COMPOSER_HOME=/tmp/composer
+# Set environment variables for memory and permissions
+ENV COMPOSER_MEMORY_LIMIT=-1 \
+    COMPOSER_ALLOW_SUPERUSER=1 \
+    COMPOSER_HOME=/composer
 
-# Install dependencies with retry and no interactive prompts
-RUN composer config --global github-protocols https && \
-    composer install --no-dev --optimize-autoloader --no-scripts --ignore-platform-reqs --no-interaction || \
-    composer install --no-dev --optimize-autoloader --no-scripts --ignore-platform-reqs --no-interaction --no-plugins
+# Set PHP memory limit
+RUN echo "memory_limit = -1" > /usr/local/etc/php/conf.d/memory-limit.ini
 
-# Copy existing application directory contents
-COPY . /var/www/html
+# Install dependencies (ignore lock file, get fresh packages)
+RUN rm -f composer.lock && \
+    composer install \
+    --no-dev \
+    --optimize-autoloader \
+    --no-scripts \
+    --no-interaction \
+    --ignore-platform-reqs
 
 # Copy Apache configuration
 COPY apache.conf /etc/apache2/sites-available/000-default.conf
@@ -49,9 +57,6 @@ RUN php artisan key:generate
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 775 /var/www/html/storage \
     && chmod -R 775 /var/www/html/bootstrap/cache
-
-# Enable Apache modules
-RUN a2enmod rewrite
 
 # Expose port 80
 EXPOSE 80
