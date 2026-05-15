@@ -1,15 +1,10 @@
 services:
   - type: web
     name: upf-university-backend
-    env: php
+    env: docker
     plan: free
-    region: frankfurt  # Choose closest region to your users
-    buildCommand: |
-      composer install --no-dev --optimize-autoloader
-      php artisan key:generate
-      php artisan migrate --force
-      chmod -R 775 storage bootstrap/cache
-    startCommand: heroku-php-apache2 public/
+    region: frankfurt
+    dockerfilePath: ./Dockerfile
     healthCheckPath: /api/user
     envVars:
       - key: APP_ENV
