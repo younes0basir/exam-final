@@ -1,4 +1,4 @@
-FROM php:8.2-apache
+FROM php:8.3-apache
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -27,8 +27,14 @@ WORKDIR /var/www/html
 # Copy composer files first (for better caching)
 COPY composer.json composer.lock ./
 
-# Install dependencies
-RUN composer install --no-dev --optimize-autoloader --no-scripts --ignore-platform-reqs
+# Disable platform requirements checking and set GitHub token
+ENV COMPOSER_ALLOW_SUPERUSER=1
+ENV COMPOSER_HOME=/tmp/composer
+
+# Install dependencies with retry and no interactive prompts
+RUN composer config --global github-protocols https && \
+    composer install --no-dev --optimize-autoloader --no-scripts --ignore-platform-reqs --no-interaction || \
+    composer install --no-dev --optimize-autoloader --no-scripts --ignore-platform-reqs --no-interaction --no-plugins
 
 # Copy existing application directory contents
 COPY . /var/www/html
