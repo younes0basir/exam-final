@@ -30,6 +30,9 @@ WORKDIR /var/www/html
 # Copy all application files
 COPY . .
 
+# Create .env file if it doesn't exist
+RUN if [ ! -f .env ]; then cp .env.example .env; fi
+
 # Set environment variables for memory and permissions
 ENV COMPOSER_MEMORY_LIMIT=-1 \
     COMPOSER_ALLOW_SUPERUSER=1 \
