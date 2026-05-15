@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: upf-university-backend
+    env: php
+    plan: free
+    region: frankfurt  # Choose closest region to your users
+    buildCommand: |
+      composer install --no-dev --optimize-autoloader
+      php artisan key:generate
+      php artisan migrate --force
+      chmod -R 775 storage bootstrap/cache
+    startCommand: heroku-php-apache2 public/
+    healthCheckPath: /api/user
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_NAME
+        value: "UPF University"
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        value: switchback.proxy.rlwy.net
+      - key: DB_PORT
+        value: "26711"
+      - key: DB_DATABASE
+        value: railway
+      - key: DB_USERNAME
+        value: root
+      - key: SESSION_DRIVER
+        value: cookie
+      - key: CACHE_STORE
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: FILESYSTEM_DISK
+        value: local
