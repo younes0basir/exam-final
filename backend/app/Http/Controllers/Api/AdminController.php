@@ -10,6 +10,9 @@ use App\Models\Groupe;
 use App\Models\Module;
 use App\Models\Salle;
 use App\Models\DemandeAdministrative;
+use App\Models\Absence;
+use App\Models\Note;
+use Carbon\Carbon;
 
 class AdminController extends Controller
 {
@@ -24,6 +27,93 @@ class AdminController extends Controller
         ];
 
         return response()->json($stats);
+    }
+
+    public function analytics()
+    {
+        // Absenteeism Rate by Month (last 6 months)
+        $absencesByMonth = [];
+        for ($i = 5; $i >= 0; $i--) {
+            $month = Carbon::now()->subMonths($i);
+            $count = Absence::whereYear('date_absence', $month->year)
+                ->whereMonth('date_absence', $month->month)
+                ->count();
+            $absencesByMonth[] = [
+                'month' => $month->format('M Y'),
+                'count' => $count,
+            ];
+        }
+
+        // Grade Distribution
+        $grades = Note::whereNotNull('note_finale')->get();
+        $gradeDistribution = [
+            'excellent' => $grades->where('note_finale', '>=', 16)->count(), // 16-20
+            'good' => $grades->whereBetween('note_finale', [12, 15.99])->count(), // 12-15.99
+            'average' => $grades->whereBetween('note_finale', [10, 11.99])->count(), // 10-11.99
+            'fail' => $grades->where('note_finale', '<', 10)->count(), // 0-9.99
+        ];
+
+        // Average Grade by Module
+        $moduleAverages = Note::selectRaw('module_id, AVG(note_finale) as average')
+            ->whereNotNull('note_finale')
+            ->groupBy('module_id')
+            ->with('module')
+            ->get()
+            ->map(function($item) {
+                return [
+                    'module' => $item->module?->nom ?? 'Unknown',
+                    'average' => round($item->average, 2),
+                ];
+            });
+
+        // Students per Filiere
+        $studentsPerFiliere = Filiere::withCount(['groupes'])
+            ->get()
+            ->map(function($filiere) {
+                $studentCount = User::where('role', 'student')
+                    ->whereHas('groups', function($query) use ($filiere) {
+                        $query->where('filiere_id', $filiere->id);
+                    })
+                    ->count();
+                return [
+                    'filiere' => $filiere->nom,
+                    'students' => $studentCount,
+                ];
+            });
+
+        // Justified vs Unjustified Absences
+        $totalAbsences = Absence::count();
+        $justifiedAbsences = Absence::where('statut_justification', 'validated')->count();
+        $unjustifiedAbsences = $totalAbsences - $justifiedAbsences;
+
+        $absenceStatus = [
+            'justified' => $justifiedAbsences,
+            'unjustified' => $unjustifiedAbsences,
+        ];
+
+        // Attendance Rate Trend (last 30 days)
+        $attendanceTrend = [];
+        for ($i = 29; $i >= 0; $i--) {
+            $date = Carbon::now()->subDays($i);
+            $totalStudents = User::where('role', 'student')->count();
+            $absentCount = Absence::whereDate('date_absence', $date)->count();
+            $attendanceRate = $totalStudents > 0 
+                ? round((($totalStudents - $absentCount) / $totalStudents) * 100, 2)
+                : 100;
+            $attendanceTrend[] = [
+                'date' => $date->format('d M'),
+                'rate' => $attendanceRate,
+            ];
+        }
+
+        return response()->json([
+            'absences_by_month' => $absencesByMonth,
+            'grade_distribution' => $gradeDistribution,
+            'module_averages' => $moduleAverages,
+            'students_per_filiere' => $studentsPerFiliere,
+            'absence_status' => $absenceStatus,
+            'attendance_trend' => $attendanceTrend,
+        ]);
     }
 
     public function users()

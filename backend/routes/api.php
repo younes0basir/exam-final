@@ -23,6 +23,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // Admin Routes
     Route::middleware(['api.role:admin'])->prefix('admin')->group(function () {
         Route::get('/dashboard/stats', [AdminController::class, 'stats']);
+        Route::get('/dashboard/analytics', [AdminController::class, 'analytics']);
         Route::get('/users', [AdminController::class, 'users']);
         Route::post('/users/student', [AdminController::class, 'storeStudent']);
         Route::get('/academic/filieres', [AdminController::class, 'filieres']);

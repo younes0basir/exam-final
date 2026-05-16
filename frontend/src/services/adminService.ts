@@ -8,6 +8,23 @@ export interface DashboardStats {
   salles: number;
 }
 
+export interface AnalyticsData {
+  absences_by_month: Array<{ month: string; count: number }>;
+  grade_distribution: {
+    excellent: number;
+    good: number;
+    average: number;
+    fail: number;
+  };
+  module_averages: Array<{ module: string; average: number }>;
+  students_per_filiere: Array<{ filiere: string; students: number }>;
+  absence_status: {
+    justified: number;
+    unjustified: number;
+  };
+  attendance_trend: Array<{ date: string; rate: number }>;
+}
+
 export interface User {
   id: number;
   name: string;
@@ -111,6 +128,9 @@ export interface Commentaire {
 export const adminService = {
   getStats: (): Promise<DashboardStats> =>
     api.get('/admin/dashboard/stats').then((res) => res.data),
+
+  getAnalytics: (): Promise<AnalyticsData> =>
+    api.get('/admin/dashboard/analytics').then((res) => res.data),
 
   getUsers: (): Promise<User[]> =>
     api.get('/admin/users').then((res) => res.data),

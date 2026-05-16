@@ -1,6 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Layout } from '../../components/layout/Layout';
-import { adminService, DashboardStats } from '../../services/adminService';
+import { adminService, DashboardStats, AnalyticsData } from '../../services/adminService';
+import {
+  GradeDistributionChart,
+  AbsencesByMonthChart,
+  AttendanceTrendChart,
+  ModuleAveragesChart,
+  AbsenceStatusChart,
+  StudentsPerFiliereChart,
+} from '../../components/DashboardCharts';
 
 const StatCard = ({ 
   title, 
@@ -45,17 +53,20 @@ const StatCard = ({
 
 export const AdminDashboard: React.FC = () => {
   const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [pendingRequests, setPendingRequests] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [statsData, requestsData] = await Promise.all([
+        const [statsData, requestsData, analyticsData] = await Promise.all([
           adminService.getStats(),
-          adminService.getRequests()
+          adminService.getRequests(),
+          adminService.getAnalytics(),
         ]);
         setStats(statsData);
+        setAnalytics(analyticsData);
         // Count pending requests from the paginated response
         const requests = Array.isArray(requestsData) ? requestsData : (requestsData as any)?.data || [];
         const pending = requests.filter((req: any) => req.statut === 'pending').length;
@@ -137,7 +148,7 @@ export const AdminDashboard: React.FC = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="glass-card rounded-2xl p-6">
+        <div className="glass-card rounded-2xl p-6 mb-8">
           <h2 className="text-xl font-bold text-gray-800 mb-4">Actions rapides</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <button className="flex items-center gap-3 p-4 rounded-xl bg-primary-50 hover:bg-primary-100 transition-colors text-left">
@@ -177,6 +188,34 @@ export const AdminDashboard: React.FC = () => {
             </button>
           </div>
         </div>
+
+        {/* Charts Section */}
+        {analytics && (
+          <>
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-gray-800">Analytiques Visuelles</h2>
+              <p className="text-gray-500">Statistiques graphiques et tendances</p>
+            </div>
+
+            {/* First Row - Grade Distribution & Absence Status */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <GradeDistributionChart data={analytics.grade_distribution} />
+              <AbsenceStatusChart data={analytics.absence_status} />
+            </div>
+
+            {/* Second Row - Absences by Month & Attendance Trend */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              <AbsencesByMonthChart data={analytics.absences_by_month} />
+              <AttendanceTrendChart data={analytics.attendance_trend} />
+            </div>
+
+            {/* Third Row - Module Averages & Students per Filiere */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <ModuleAveragesChart data={analytics.module_averages} />
+              <StudentsPerFiliereChart data={analytics.students_per_filiere} />
+            </div>
+          </>
+        )}
       </div>
     </Layout>
   );
