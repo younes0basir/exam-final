@@ -1,0 +1,78 @@
+@startuml UPF System Architecture
+skinparam backgroundColor white
+skinparam rectangle {
+  BackgroundColor<<frontend>> LightBlue
+  BackgroundColor<<backend>> LightGreen
+  BackgroundColor<<database>> LightYellow
+  BorderColor Black
+}
+
+title UPF University Management System - Architecture Diagram
+
+package "CLIENT LAYER" <<frontend>> {
+  rectangle "React 18 + TypeScript\nWeb Application" as ReactApp
+  rectangle "Node.js CLI Tool\nCommand Line Interface" as CLITool
+}
+
+package "API LAYER" <<backend>> {
+  rectangle "Laravel 11\nREST API Server" as Laravel {
+    rectangle "Authentication\n(Sanctum JWT)" as Auth
+    rectangle "Controllers\n& Business Logic" as Controllers
+    rectangle "Middleware\n(Role-based Access)" as Middleware
+    rectangle "Eloquent ORM\nData Access" as ORM
+  }
+}
+
+package "DATA LAYER" <<database>> {
+  database "MySQL 8.0\nDatabase" as MySQL {
+    rectangle "15 Tables:\n- users\n- filieres\n- groupes\n- modules\n- notes\n- absences\n- ..." as Tables
+  }
+}
+
+' External Services
+cloud "External Services" as External {
+  rectangle "DomPDF\nPDF Generation" as PDF
+  rectangle "Maatwebsite\nExcel Export" as Excel
+}
+
+' Connections
+ReactApp -down-> Auth : "HTTP/REST\n+ JWT Tokens"
+CLITool -down-> Auth : "HTTP/REST\n+ JWT Tokens"
+
+Auth -right-> Middleware
+Middleware -down-> Controllers
+Controllers -down-> ORM
+ORM -down-> Tables
+
+Controllers -right-> PDF : "Generate\nCertificates"
+Controllers -right-> Excel : "Export\nGrades/Absences"
+
+' Styling
+skinparam arrowColor #2D3748
+skinparam shadowing false
+
+note bottom of ReactApp
+  Features:
+  - Multi-language (FR/EN/AR)
+  - Interactive Charts
+  - Real-time Updates
+  - Responsive Design
+end note
+
+note bottom of Laravel
+  Features:
+  - RESTful API
+  - Role-based Access
+  - Data Validation
+  - Security (CSRF, XSS)
+end note
+
+note bottom of MySQL
+  Contains:
+  - User Data
+  - Academic Records
+  - Schedules
+  - Documents
+end note
+
+@enduml

@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { Toast } from '../../components/ui/Toast';
 
 export const LoginPage: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -42,7 +44,7 @@ export const LoginPage: React.FC = () => {
           : '/student';
       navigate(redirectPath, { replace: true });
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Connexion echouee. Verifiez vos identifiants.');
+      setError(err.response?.data?.message || t('messages.loginError'));
     } finally {
       setLoading(false);
     }
@@ -59,7 +61,7 @@ export const LoginPage: React.FC = () => {
       {/* Toast Notification */}
       {showToast && (
         <Toast
-          message="Connexion reussie. Redirection..."
+          message={t('messages.loginSuccess')}
           type="success"
           onFermer={() => setShowToast(false)}
           duration={2000}
@@ -77,7 +79,7 @@ export const LoginPage: React.FC = () => {
           <h1 className="text-3xl font-bold text-slate-800">
             UPF University
           </h1>
-          <p className="mt-2 text-slate-500">Connectez-vous a votre compte</p>
+          <p className="mt-2 text-slate-500">{t('common.welcome')}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-5">
@@ -96,7 +98,7 @@ export const LoginPage: React.FC = () => {
           {/* E-mail Field */}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1">
-              Adresse e-mail
+              {t('common.email')}
             </label>
             <div className="relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -110,13 +112,13 @@ export const LoginPage: React.FC = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="block w-full pl-10 pr-3 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
-                placeholder="Entrez votre e-mail"
+                placeholder={t('common.email')}
                 required
               />
             </div>
           </div>
 
-          {/* Passableword Field */}
+          {/* Password Field */}
           <div>
             <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1">
               Mot de passe
@@ -133,16 +135,16 @@ export const LoginPage: React.FC = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="block w-full pl-10 pr-3 py-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors bg-white"
-                placeholder="Entrez votre mot de passe"
+                placeholder="••••••••"
                 required
               />
             </div>
           </div>
 
-          {/* Forgot Passableword Link */}
+          {/* Forgot Password Link */}
           <div className="flex items-center justify-end">
             <a href="#" className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors">
-              Mot de passe oublie ?
+              Mot de passe oublié ?
             </a>
           </div>
 
@@ -158,10 +160,10 @@ export const LoginPage: React.FC = () => {
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
                 </svg>
-                Connexion...
+                {t('common.loading')}
               </>
             ) : (
-              'Se connecter'
+              t('common.login')
             )}
           </button>
         </form>
@@ -172,7 +174,7 @@ export const LoginPage: React.FC = () => {
             <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Comptes de demonstration</p>
+            <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">{t('common.demoAccounts')}</p>
           </div>
           <div className="space-y-2">
             <button
@@ -183,7 +185,7 @@ export const LoginPage: React.FC = () => {
                 <span className="text-xs font-bold text-white">A</span>
               </div>
               <div className="text-left">
-                <p className="text-sm font-semibold text-slate-800">Administrateur</p>
+                <p className="text-sm font-semibold text-slate-800">{t('users.admin')}</p>
                 <p className="text-xs text-slate-500">admin@upf.ma</p>
               </div>
               <svg className="w-4 h-4 text-slate-400 ml-auto group-hover:text-blue-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -192,15 +194,15 @@ export const LoginPage: React.FC = () => {
             </button>
 
             <button
-              onClick={() => { setEmail('prof@upf.ma'); setPassword('password'); }}
+              onClick={() => { setEmail('l.benali@upf.ma'); setPassword('password'); }}
               className="w-full flex items-center gap-3 p-2 rounded-lg bg-white hover:bg-slate-100 transition-all group border border-slate-200 hover:border-emerald-300"
             >
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-md">
                 <span className="text-xs font-bold text-white">P</span>
               </div>
               <div className="text-left">
-                <p className="text-sm font-semibold text-slate-800">Professeur</p>
-                <p className="text-xs text-slate-500">prof@upf.ma</p>
+                <p className="text-sm font-semibold text-slate-800">{t('users.professor')}</p>
+                <p className="text-xs text-slate-500">l.benali@upf.ma</p>
               </div>
               <svg className="w-4 h-4 text-slate-400 ml-auto group-hover:text-emerald-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
@@ -208,15 +210,15 @@ export const LoginPage: React.FC = () => {
             </button>
 
             <button
-              onClick={() => { setEmail('student@upf.ma'); setPassword('password'); }}
+              onClick={() => { setEmail('a.bennani2@student.upf.ma'); setPassword('password'); }}
               className="w-full flex items-center gap-3 p-2 rounded-lg bg-white hover:bg-slate-100 transition-all group border border-slate-200 hover:border-amber-300"
             >
               <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-md">
                 <span className="text-xs font-bold text-white">S</span>
               </div>
               <div className="text-left">
-                <p className="text-sm font-semibold text-slate-800">Etudiant</p>
-                <p className="text-xs text-slate-500">student@upf.ma</p>
+                <p className="text-sm font-semibold text-slate-800">{t('users.student')}</p>
+                <p className="text-xs text-slate-500">a.bennani2@student.upf.ma</p>
               </div>
               <svg className="w-4 h-4 text-slate-400 ml-auto group-hover:text-amber-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />

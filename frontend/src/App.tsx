@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import i18n from './i18n';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { LoginPage } from './pages/auth/LoginPage';
 
@@ -31,6 +33,14 @@ import { StudentClassroomPage } from './pages/student/StudentClassroomPage';
 import { UnauthorizedPage } from './pages/UnauthorizedPage';
 
 function App() {
+  // Ensure language persists across route changes
+  useEffect(() => {
+    const savedLocale = localStorage.getItem('i18nextLng') || localStorage.getItem('locale');
+    if (savedLocale && savedLocale !== i18n.language) {
+      i18n.changeLanguage(savedLocale);
+    }
+  }, []);
+
   return (
     <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <Routes>

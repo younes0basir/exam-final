@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Layout } from '../../components/layout/Layout';
 import { adminService, DashboardStats, AnalyticsData } from '../../services/adminService';
 import {
@@ -52,6 +53,7 @@ const StatCard = ({
 };
 
 export const AdminDashboard: React.FC = () => {
+  const { t } = useTranslation();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [pendingRequests, setPendingRequests] = useState(0);
@@ -96,14 +98,14 @@ export const AdminDashboard: React.FC = () => {
       <div className="p-6 md:p-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">Tableau de bord administrateur</h1>
-          <p className="text-gray-500">Bienvenue. Voici l'activite du jour.</p>
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">{t('dashboard.title')}</h1>
+          <p className="text-gray-500">{t('common.welcome')}. {t('dashboard.subtitle')}</p>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <StatCard
-            title="Total etudiants"
+            title={t('stats.totalStudents')}
             value={stats?.students || 0}
             icon={
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,7 +116,7 @@ export const AdminDashboard: React.FC = () => {
           />
           
           <StatCard
-            title="Total professeurs"
+            title={t('stats.totalProfessors')}
             value={stats?.professors || 0}
             icon={
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -125,7 +127,7 @@ export const AdminDashboard: React.FC = () => {
           />
           
           <StatCard
-            title="Filieres"
+            title={t('stats.totalFilieres')}
             value={stats?.filieres || 0}
             icon={
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -136,7 +138,7 @@ export const AdminDashboard: React.FC = () => {
           />
           
           <StatCard
-            title="Demandes en attente"
+            title={t('stats.pendingRequests')}
             value={pendingRequests}
             icon={
               <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -149,7 +151,7 @@ export const AdminDashboard: React.FC = () => {
 
         {/* Quick Actions */}
         <div className="glass-card rounded-2xl p-6 mb-8">
-          <h2 className="text-xl font-bold text-gray-800 mb-4">Actions rapides</h2>
+          <h2 className="text-xl font-bold text-gray-800 mb-4">{t('dashboard.quickActions')}</h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <button className="flex items-center gap-3 p-4 rounded-xl bg-primary-50 hover:bg-primary-100 transition-colors text-left">
               <div className="w-10 h-10 rounded-lg bg-primary-500 flex items-center justify-center">
@@ -158,8 +160,8 @@ export const AdminDashboard: React.FC = () => {
                 </svg>
               </div>
               <div>
-                <p className="font-semibold text-gray-800">Ajouter un etudiant</p>
-                <p className="text-xs text-gray-500">Inscrire un nouvel etudiant</p>
+                <p className="font-semibold text-gray-800">{t('users.addUser')}</p>
+                <p className="text-xs text-gray-500">{t('navigation.students')}</p>
               </div>
             </button>
 
@@ -170,8 +172,8 @@ export const AdminDashboard: React.FC = () => {
                 </svg>
               </div>
               <div>
-                <p className="font-semibold text-gray-800">Voir les demandes</p>
-                <p className="text-xs text-gray-500">{pendingRequests} en attente</p>
+                <p className="font-semibold text-gray-800">{t('requests.title')}</p>
+                <p className="text-xs text-gray-500">{pendingRequests} {t('common.pending').toLowerCase()}</p>
               </div>
             </button>
 
@@ -182,8 +184,8 @@ export const AdminDashboard: React.FC = () => {
                 </svg>
               </div>
               <div>
-                <p className="font-semibold text-gray-800">Emploi du temps</p>
-                <p className="text-xs text-gray-500">Gerer les plannings</p>
+                <p className="font-semibold text-gray-800">{t('timetable.title')}</p>
+                <p className="text-xs text-gray-500">{t('dashboard.quickActions')}</p>
               </div>
             </button>
           </div>
@@ -193,8 +195,8 @@ export const AdminDashboard: React.FC = () => {
         {analytics && (
           <>
             <div className="mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">Analytiques Visuelles</h2>
-              <p className="text-gray-500">Statistiques graphiques et tendances</p>
+              <h2 className="text-2xl font-bold text-gray-800">{t('dashboard.analytics')}</h2>
+              <p className="text-gray-500">{t('dashboard.trends')}</p>
             </div>
 
             {/* First Row - Grade Distribution & Absence Status */}

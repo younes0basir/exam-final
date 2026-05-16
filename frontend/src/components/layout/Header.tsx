@@ -1,4 +1,6 @@
+import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../store/authStore';
+import { LanguageSwitcher } from '../LanguageSwitcher';
 
 const roleColors: Record<string, string> = {
   admin: 'bg-gradient-to-r from-cyan-500 to-blue-500',
@@ -7,12 +9,13 @@ const roleColors: Record<string, string> = {
 };
 
 const roleLabels: Record<string, string> = {
-  admin: 'Administrateur',
-  professor: 'Professeur',
-  student: 'Etudiant',
+  admin: 'admin',
+  professor: 'professor',
+  student: 'student',
 };
 
 export const Header: React.FC = () => {
+  const { t } = useTranslation();
   const { user, logout } = useAuthStore();
 
   const handleLogout = async () => {
@@ -34,12 +37,15 @@ export const Header: React.FC = () => {
               <h1 className="text-xl font-bold gradient-text">
                 Universite UPF
               </h1>
-              <p className="text-xs text-gray-500">Systeme de gestion</p>
+              <p className="text-xs text-gray-500">{t('dashboard.subtitle')}</p>
             </div>
           </div>
 
           {/* User Info */}
           <div className="flex items-center gap-4">
+            {/* Language Switcher */}
+            <LanguageSwitcher />
+            
             {/* Notification Bell */}
             <button className="relative p-2 rounded-xl hover:bg-gray-800 transition-colors">
               <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -53,7 +59,7 @@ export const Header: React.FC = () => {
               <div className="text-right hidden sm:block">
                 <p className="text-sm font-semibold text-gray-200">{user?.name}</p>
                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium text-white ${roleColors[user?.role || 'student']}`}>
-                  {roleLabels[user?.role || 'student']}
+                  {t(`users.${roleLabels[user?.role || 'student']}`)}
                 </span>
               </div>
               
@@ -68,7 +74,7 @@ export const Header: React.FC = () => {
               <button
                 onClick={handleLogout}
                 className="p-2 rounded-xl hover:bg-red-500/10 text-gray-400 hover:text-red-400 transition-all"
-                title="Deconnexion"
+                title={t('navigation.logout')}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />

@@ -9,9 +9,14 @@ use App\Http\Controllers\Api\ReservationController;
 use App\Http\Controllers\Api\ClassroomController;
 use App\Http\Controllers\Api\AbsenceController;
 use App\Http\Controllers\Api\DocumentController;
+use App\Http\Controllers\Api\LanguageController;
 
 // Public API routes
 Route::post('/login', [AuthController::class, 'login']);
+
+// Language routes (public)
+Route::get('/languages', [LanguageController::class, 'getLanguages']);
+Route::get('/translations/{locale?}', [LanguageController::class, 'getTranslations']);
 
 // Protected API routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -19,6 +24,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // Auth
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('/logout', [AuthController::class, 'logout']);
+    
+    // Language switching (authenticated)
+    Route::post('/language', [LanguageController::class, 'setLanguage']);
 
     // Admin Routes
     Route::middleware(['api.role:admin'])->prefix('admin')->group(function () {
