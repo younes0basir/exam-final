@@ -37,6 +37,9 @@ export interface Filiere {
   id: number;
   nom: string;
   code: string;
+  description?: string;
+  groupes_count?: number;
+  modules_count?: number;
 }
 
 export interface TimetableEntry {
@@ -135,6 +138,17 @@ export const adminService = {
   getUsers: (): Promise<User[]> =>
     api.get('/admin/users').then((res) => res.data),
 
+  updateUser: (id: number, data: {
+    name?: string;
+    email?: string;
+    role?: string;
+    password?: string;
+  }): Promise<User> =>
+    api.put(`/admin/users/${id}`, data).then((res) => res.data),
+
+  deleteUser: (id: number): Promise<void> =>
+    api.delete(`/admin/users/${id}`),
+
   createStudent: (data: {
     name: string;
     email: string;
@@ -144,6 +158,25 @@ export const adminService = {
 
   getFilieres: (): Promise<Filiere[]> =>
     api.get('/admin/academic/filieres').then((res) => res.data),
+
+  createFiliere: (data: {
+    nom: string;
+    code: string;
+    description?: string;
+    groupes?: Array<{ nom: string }>;
+    modules?: Array<{ nom: string; professors: number[] }>;
+  }): Promise<Filiere> =>
+    api.post('/admin/academic/filieres', data).then((res) => res.data),
+
+  updateFiliere: (id: number, data: {
+    nom?: string;
+    code?: string;
+    description?: string;
+  }): Promise<Filiere> =>
+    api.put(`/admin/academic/filieres/${id}`, data).then((res) => res.data),
+
+  deleteFiliere: (id: number): Promise<void> =>
+    api.delete(`/admin/academic/filieres/${id}`),
 
   getTimetable: (filters?: TimetableFilters): Promise<TimetableEntry[]> => {
     const params = new URLSearchParams();
@@ -155,6 +188,67 @@ export const adminService = {
     const query = params.toString() ? `?${params.toString()}` : '';
     return api.get(`/admin/timetable${query}`).then((res) => res.data);
   },
+
+  getModules: (): Promise<any[]> =>
+    api.get('/admin/academic/modules').then((res) => res.data),
+
+  createModule: (data: {
+    nom: string;
+    filiere_id: number;
+  }): Promise<any> =>
+    api.post('/admin/academic/modules', data).then((res) => res.data),
+
+  updateModule: (id: number, data: {
+    nom?: string;
+    filiere_id?: number;
+  }): Promise<any> =>
+    api.put(`/admin/academic/modules/${id}`, data).then((res) => res.data),
+
+  deleteModule: (id: number): Promise<void> =>
+    api.delete(`/admin/academic/modules/${id}`),
+
+  toggleProfessor: (moduleId: number, professorId: number): Promise<void> =>
+    api.post(`/admin/academic/modules/${moduleId}/toggle-professor`, { professor_id: professorId }),
+
+  getGroupes: (): Promise<any[]> =>
+    api.get('/admin/academic/groupes').then((res) => res.data),
+
+  createGroupe: (data: {
+    nom: string;
+    filiere_id: number;
+  }): Promise<any> =>
+    api.post('/admin/academic/groupes', data).then((res) => res.data),
+
+  updateGroupe: (id: number, data: {
+    nom?: string;
+    filiere_id?: number;
+  }): Promise<any> =>
+    api.put(`/admin/academic/groupes/${id}`, data).then((res) => res.data),
+
+  deleteGroupe: (id: number): Promise<void> =>
+    api.delete(`/admin/academic/groupes/${id}`),
+
+  getSalles: (): Promise<any[]> =>
+    api.get('/admin/salles').then((res) => res.data),
+
+  createSalle: (data: {
+    nom: string;
+    capacite: number;
+    type: string;
+    equipements?: string;
+  }): Promise<any> =>
+    api.post('/admin/salles', data).then((res) => res.data),
+
+  updateSalle: (id: number, data: {
+    nom?: string;
+    capacite?: number;
+    type?: string;
+    equipements?: string;
+  }): Promise<any> =>
+    api.put(`/admin/salles/${id}`, data).then((res) => res.data),
+
+  deleteSalle: (id: number): Promise<void> =>
+    api.delete(`/admin/salles/${id}`),
 
   getRequests: (): Promise<AdministrativeRequest[]> =>
     api.get('/admin/requests').then((res) => res.data),

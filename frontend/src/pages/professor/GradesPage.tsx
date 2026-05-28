@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Layout } from '../../components/layout/Layout';
-import { professorService, Module, NotesResponse } from '../../services/professorService';
+import { professorService, Module, GradesResponse } from '../../services/professorService';
 import { Toast } from '../../components/ui/Toast';
 
 interface EtudiantNote {
@@ -50,7 +50,7 @@ export const NotesPage: React.FC = () => {
     if (!selectedModule) return;
     try {
       setLoading(true);
-      const data: NotesResponse = await professorService.getNotes(selectedModule);
+      const data: GradesResponse = await professorService.getGrades(selectedModule);
       setModuleInfo(data.module);
 
       const grades: EtudiantNote[] = data.students.map((student) => {
@@ -77,7 +77,7 @@ export const NotesPage: React.FC = () => {
   };
 
   const calculateFinaleNote = (cc1: number, cc2: number, examen: number): number => {
-    return Math.round(((cc1 + cc2) / 2) * 0.4 + examen * 0.6 * 100) / 100;
+    return Math.round((((cc1 + cc2) / 2) * 0.4 + examen * 0.6) * 100) / 100;
   };
 
   const handleNoteChange = (studentId: number, field: 'cc1' | 'cc2' | 'examen', value: string) => {
@@ -108,7 +108,7 @@ export const NotesPage: React.FC = () => {
           examen: g.examen ? parseFloat(g.examen) : undefined,
         };
       });
-      await professorService.submitNotes(selectedModule, gradesData);
+      await professorService.submitGrades(selectedModule, gradesData);
       setToast({ message: 'Notes saved avec succes', type: 'success' });
       fetchNotes();
     } catch (error) {
@@ -127,12 +127,12 @@ export const NotesPage: React.FC = () => {
     return 'text-red-600 bg-red-50';
   };
 
-  const validNotes = studentNotes.filter((g) => g.noteFinalee !== null);
+  const validNotes = studentNotes.filter((g) => g.noteFinalee !== null && !isNaN(Number(g.noteFinalee)));
   const average = validNotes.length > 0
-    ? validNotes.reduce((acc, g) => acc + (g.noteFinalee || 0), 0) / validNotes.length
+    ? validNotes.reduce((acc, g) => acc + (Number(g.noteFinalee) || 0), 0) / validNotes.length
     : 0;
-  const passed = validNotes.filter((g) => (g.noteFinalee || 0) >= 10).length;
-  const failed = validNotes.filter((g) => (g.noteFinalee || 0) < 10).length;
+  const passed = validNotes.filter((g) => (Number(g.noteFinalee) || 0) >= 10).length;
+  const failed = validNotes.filter((g) => (Number(g.noteFinalee) || 0) < 10).length;
 
   if (loading && modules.length === 0) {
     return (
@@ -169,7 +169,9 @@ export const NotesPage: React.FC = () => {
             >
               <option value="">Selectionner un module</option>
               {modules.map((m) => (
-                <option key={m.id} value={m.id}>{m.nom}</option>
+                <option key={m.id} value={m.id}>
+                  {m.nom} ({m.students_count || 0} étudiants)
+                </option>
               ))}
             </select>
             <button

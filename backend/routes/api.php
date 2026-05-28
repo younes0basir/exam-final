@@ -34,12 +34,30 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/dashboard/analytics', [AdminController::class, 'analytics']);
         Route::get('/users', [AdminController::class, 'users']);
         Route::post('/users/student', [AdminController::class, 'storeStudent']);
+        Route::put('/users/{id}', [AdminController::class, 'updateUser']);
+        Route::delete('/users/{id}', [AdminController::class, 'deleteUser']);
         Route::get('/academic/filieres', [AdminController::class, 'filieres']);
+        Route::post('/academic/filieres', [AdminController::class, 'storeFiliere']);
+        Route::put('/academic/filieres/{id}', [AdminController::class, 'updateFiliere']);
+        Route::delete('/academic/filieres/{id}', [AdminController::class, 'deleteFiliere']);
         Route::get('/academic/groupes', [AdminController::class, 'groupes']);
+        Route::post('/academic/groupes', [AdminController::class, 'storeGroupe']);
+        Route::put('/academic/groupes/{id}', [AdminController::class, 'updateGroupe']);
+        Route::delete('/academic/groupes/{id}', [AdminController::class, 'deleteGroupe']);
         Route::get('/academic/modules', [AdminController::class, 'modules']);
+        Route::post('/academic/modules', [AdminController::class, 'storeModule']);
+        Route::put('/academic/modules/{id}', [AdminController::class, 'updateModule']);
+        Route::delete('/academic/modules/{id}', [AdminController::class, 'deleteModule']);
+        Route::post('/academic/modules/{moduleId}/toggle-professor', [AdminController::class, 'toggleProfessor']);
         Route::get('/timetable', [AdminController::class, 'timetable']);
         Route::get('/requests', [AdminController::class, 'requests']);
         Route::patch('/requests/{id}', [AdminController::class, 'updateRequestStatus']);
+
+        // Admin: Gestion des salles
+        Route::get('/salles', [AdminController::class, 'salles']);
+        Route::post('/salles', [AdminController::class, 'storeSalle']);
+        Route::put('/salles/{id}', [AdminController::class, 'updateSalle']);
+        Route::delete('/salles/{id}', [AdminController::class, 'deleteSalle']);
 
         // Admin: Gestion des réservations de salles
         Route::get('/reservations', [ReservationController::class, 'allReservations']);

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use App\Models\Filiere;
 use App\Models\Groupe;
@@ -122,6 +123,36 @@ class AdminController extends Controller
         return response()->json($users);
     }
 
+    public function updateUser(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+
+        $request->validate([
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|unique:users,email,' . $id,
+            'role' => 'sometimes|in:admin,professor,student',
+            'password' => 'sometimes|min:8',
+        ]);
+
+        $data = $request->only(['name', 'email', 'role']);
+        
+        if ($request->filled('password')) {
+            $data['password'] = bcrypt($request->password);
+        }
+
+        $user->update($data);
+
+        return response()->json(['message' => 'User updated successfully', 'user' => $user]);
+    }
+
+    public function deleteUser($id)
+    {
+        $user = User::findOrFail($id);
+        $user->delete();
+
+        return response()->json(['message' => 'User deleted successfully']);
+    }
+
     public function storeStudent(Request $request)
     {
         $request->validate([
@@ -144,6 +175,126 @@ class AdminController extends Controller
     {
         $filieres = Filiere::withCount(['groupes', 'modules'])->get();
         return response()->json($filieres);
+    }
+
+    public function storeFiliere(Request $request)
+    {
+        $request->validate([
+            'nom' => 'required|string|max:255',
+            'code' => 'required|string|max:50|unique:filieres,code',
+            'description' => 'nullable|string',
+            'groupes' => 'nullable|array',
+            'groupes.*.nom' => 'required|string',
+            'modules' => 'nullable|array',
+            'modules.*.nom' => 'required|string',
+            'modules.*.professors' => 'nullable|array',
+            'modules.*.professors.*' => 'exists:users,id',
+        ]);
+
+        $filiere = Filiere::create($request->only(['nom', 'code', 'description']));
+
+        // Create groups if provided
+        if ($request->has('groupes')) {
+            foreach ($request->groupes as $groupeData) {
+                DB::table('groupes')->insert([
+                    'nom' => $groupeData['nom'],
+                    'filiere_id' => $filiere->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            }
+        }
+
+        // Create modules and assign professors if provided
+        if ($request->has('modules')) {
+            foreach ($request->modules as $moduleData) {
+                $moduleId = DB::table('modules')->insertGetId([
+                    'nom' => $moduleData['nom'],
+                    'filiere_id' => $filiere->id,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+
+                // Assign professors to module
+                if (isset($moduleData['professors']) && is_array($moduleData['professors'])) {
+                    foreach ($moduleData['professors'] as $professorId) {
+                        DB::table('module_professor')->insert([
+                            'module_id' => $moduleId,
+                            'professor_id' => $professorId,
+                        ]);
+                    }
+                }
+            }
+        }
+
+        return response()->json(['message' => 'Filiere created successfully', 'filiere' => $filiere], 201);
+    }
+
+    public function updateFiliere(Request $request, $id)
+    {
+        $filiere = Filiere::findOrFail($id);
+
+        $request->validate([
+            'nom' => 'sometimes|string|max:255',
+            'code' => 'sometimes|string|max:50|unique:filieres,code,' . $id,
+            'description' => 'nullable|string',
+        ]);
+
+        $filiere->update($request->only(['nom', 'code', 'description']));
+
+        return response()->json(['message' => 'Filiere updated successfully', 'filiere' => $filiere]);
+    }
+
+    public function deleteFiliere($id)
+    {
+        $filiere = Filiere::findOrFail($id);
+        $filiere->delete();
+
+        return response()->json(['message' => 'Filiere deleted successfully']);
+    }
+
+    public function salles()
+    {
+        $salles = Salle::all();
+        return response()->json($salles);
+    }
+
+    public function storeSalle(Request $request)
+    {
+        $request->validate([
+            'nom' => 'required|string|max:255',
+            'capacite' => 'required|integer|min:1',
+            'type' => 'required|string|max:255',
+            'equipements' => 'nullable|string',
+        ]);
+
+        $salle = Salle::create($request->only(['nom', 'capacite', 'type', 'equipements']));
+
+        return response()->json(['message' => 'Salle created successfully', 'salle' => $salle], 201);
+    }
+
+    public function updateSalle(Request $request, $id)
+    {
+        $salle = Salle::findOrFail($id);
+
+        $request->validate([
+            'nom' => 'sometimes|string|max:255',
+            'capacite' => 'sometimes|integer|min:1',
+            'type' => 'sometimes|string|max:255',
+            'equipements' => 'nullable|string',
+        ]);
+
+        $salle->update($request->only(['nom', 'capacite', 'type', 'equipements']));
+
+        return response()->json(['message' => 'Salle updated successfully', 'salle' => $salle]);
+    }
+
+    public function deleteSalle($id)
+    {
+        $salle = Salle::findOrFail($id);
+        $salle->delete();
+
+        return response()->json(['message' => 'Salle deleted successfully']);
     }
 
     public function timetable()
@@ -191,14 +342,111 @@ class AdminController extends Controller
 
     public function groupes()
     {
-        $groupes = Groupe::with('filiere')->get();
+        $groupes = Groupe::with('filiere')->withCount('students')->get();
         return response()->json($groupes);
+    }
+
+    public function storeGroupe(Request $request)
+    {
+        $request->validate([
+            'nom' => 'required|string|max:255',
+            'filiere_id' => 'required|exists:filieres,id',
+        ]);
+
+        $groupe = Groupe::create($request->only(['nom', 'filiere_id']));
+
+        return response()->json(['message' => 'Groupe created successfully', 'groupe' => $groupe], 201);
+    }
+
+    public function updateGroupe(Request $request, $id)
+    {
+        $groupe = Groupe::findOrFail($id);
+
+        $request->validate([
+            'nom' => 'sometimes|string|max:255',
+            'filiere_id' => 'sometimes|exists:filieres,id',
+        ]);
+
+        $groupe->update($request->only(['nom', 'filiere_id']));
+
+        return response()->json(['message' => 'Groupe updated successfully', 'groupe' => $groupe]);
+    }
+
+    public function deleteGroupe($id)
+    {
+        $groupe = Groupe::findOrFail($id);
+        $groupe->delete();
+
+        return response()->json(['message' => 'Groupe deleted successfully']);
     }
 
     public function modules()
     {
-        $modules = Module::with('filiere')->get();
+        $modules = Module::with(['filiere', 'professors'])->get();
         return response()->json($modules);
+    }
+
+    public function storeModule(Request $request)
+    {
+        $request->validate([
+            'nom' => 'required|string|max:255',
+            'filiere_id' => 'required|exists:filieres,id',
+        ]);
+
+        $module = Module::create($request->only(['nom', 'filiere_id']));
+
+        return response()->json(['message' => 'Module created successfully', 'module' => $module], 201);
+    }
+
+    public function updateModule(Request $request, $id)
+    {
+        $module = Module::findOrFail($id);
+
+        $request->validate([
+            'nom' => 'sometimes|string|max:255',
+            'filiere_id' => 'sometimes|exists:filieres,id',
+        ]);
+
+        $module->update($request->only(['nom', 'filiere_id']));
+
+        return response()->json(['message' => 'Module updated successfully', 'module' => $module]);
+    }
+
+    public function deleteModule($id)
+    {
+        $module = Module::findOrFail($id);
+        $module->delete();
+
+        return response()->json(['message' => 'Module deleted successfully']);
+    }
+
+    public function toggleProfessor(Request $request, $moduleId)
+    {
+        $request->validate([
+            'professor_id' => 'required|exists:users,id',
+        ]);
+
+        $module = Module::findOrFail($moduleId);
+        $professorId = $request->professor_id;
+
+        $exists = DB::table('module_professor')
+            ->where('module_id', $moduleId)
+            ->where('professor_id', $professorId)
+            ->exists();
+
+        if ($exists) {
+            DB::table('module_professor')
+                ->where('module_id', $moduleId)
+                ->where('professor_id', $professorId)
+                ->delete();
+        } else {
+            DB::table('module_professor')->insert([
+                'module_id' => $moduleId,
+                'professor_id' => $professorId,
+            ]);
+        }
+
+        return response()->json(['message' => 'Professor assignment toggled successfully']);
     }
 
     public function requests()

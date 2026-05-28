@@ -8,13 +8,16 @@ import { LoginPage } from './pages/auth/LoginPage';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { UsersPage } from './pages/admin/UsersPage';
 import { FilieresPage } from './pages/admin/FilieresPage';
+import { ModulesPage as AdminModulesPage } from './pages/admin/ModulesPage';
+import { GroupesPage } from './pages/admin/GroupesPage';
+import { SallesPage } from './pages/admin/SallesPage';
 import { TimetablePage as AdminTimetablePage } from './pages/admin/TimetablePage';
 import { RequestsPage as AdminRequestsPage } from './pages/admin/RequestsPage';
 
 // Professor Pages
 import { ProfessorDashboard } from './pages/professor/ProfessorDashboard';
 import { ModulesPage } from './pages/professor/ModulesPage';
-// import { NotesPage } from './pages/professor/NotesPage';
+import { NotesPage } from './pages/professor/GradesPage';
 import { SessionsPage } from './pages/professor/SessionsPage';
 import { ReservationsPage } from './pages/professor/ReservationsPage';
 import { ProfessorAbsencesPage } from './pages/professor/ProfessorAbsencesPage';
@@ -57,6 +60,9 @@ function App() {
                 <Route path="/" element={<AdminDashboard />} />
                 <Route path="/users" element={<UsersPage />} />
                 <Route path="/filieres" element={<FilieresPage />} />
+                <Route path="/modules" element={<AdminModulesPage />} />
+                <Route path="/groupes" element={<GroupesPage />} />
+                <Route path="/salles" element={<SallesPage />} />
                 <Route path="/timetable" element={<AdminTimetablePage />} />
                 <Route path="/requests" element={<AdminRequestsPage />} />
               </Routes>
@@ -72,7 +78,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<ProfessorDashboard />} />
                 <Route path="/modules" element={<ModulesPage />} />
-                {/* <Route path="/grades" element={<NotesPage />} /> */}
+                <Route path="/grades" element={<NotesPage />} />
                 <Route path="/sessions" element={<SessionsPage />} />
                 <Route path="/reservations" element={<ReservationsPage />} />
                 <Route path="/absences" element={<ProfessorAbsencesPage />} />

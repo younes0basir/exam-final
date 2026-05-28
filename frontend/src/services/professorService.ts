@@ -6,6 +6,12 @@ export interface Module {
   code?: string; // Optionnel - pas dans la DB
   filiere: string | { id: number; nom: string; code?: string };
   semestre?: number; // Optionnel - pas dans la DB
+  students_count?: number;
+}
+
+export interface ProfessorStats {
+  modules_count: number;
+  pending_notes: number;
 }
 
 export interface Grade {
@@ -125,6 +131,9 @@ export interface Demande {
 }
 
 export const professorService = {
+  getStats: (): Promise<ProfessorStats> =>
+    api.get('/professor/dashboard/stats').then((res) => res.data),
+
   getModules: (): Promise<Module[]> =>
     api.get('/professor/modules').then((res) => res.data),
 

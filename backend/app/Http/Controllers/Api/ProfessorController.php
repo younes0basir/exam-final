@@ -23,8 +23,20 @@ class ProfessorController extends Controller
 
     public function modules()
     {
-        $modules = auth()->user()->modules()->with('filiere')->get();
-        return response()->json($modules);
+        $user = auth()->user();
+        $modules = $user->modules()->with('filiere')->get();
+
+        // Add student count for each module
+        $modulesWithStudents = $modules->map(function($module) {
+            $studentsCount = User::whereHas('groups', function($q) use ($module) {
+                $q->where('filiere_id', $module->filiere_id);
+            })->where('role', 'student')->count();
+
+            $module->students_count = $studentsCount;
+            return $module;
+        });
+
+        return response()->json($modulesWithStudents);
     }
 
     public function getGrades($moduleId)
