@@ -27,14 +27,25 @@ export function registerAdminCommands(program) {
 
   admin
     .command("users")
-    .description("Lister tous les utilisateurs")
+    .description("Gérer les utilisateurs (CRUD)")
     .option("--role <role>", "Filtrer par rôle (student/professor/admin)")
     .option("--json", "Sortie JSON")
+    .option("--create", "Créer un nouvel utilisateur")
+    .option("--update <id>", "Mettre à jour un utilisateur")
+    .option("--delete <id>", "Supprimer un utilisateur")
     .action(async (options) => {
       try {
-        await listUsers(options);
+        if (options.create) {
+          await createUser();
+        } else if (options.update) {
+          await updateUser(options.update);
+        } else if (options.delete) {
+          await deleteUser(options.delete);
+        } else {
+          await listUsers(options);
+        }
       } catch (error) {
-        printError(error?.response?.data?.message || "Erreur lors du chargement des utilisateurs.");
+        printError(error?.response?.data?.message || "Erreur lors de l'opération sur les utilisateurs.");
         process.exitCode = 1;
       }
     });
@@ -449,4 +460,193 @@ export async function viewAbsences(options = {}) {
   ]);
   printTable(["Étudiant", "Module", "Date", "Justifiée", "Statut"], rows);
   return absences;
+}
+
+// ==================== CRUD OPERATIONS ====================
+
+// CREATE User
+export async function createUser() {
+  console.log("\n📝 Créer un nouvel utilisateur\n");
+  
+  const answers = await inquirer.prompt([
+    {
+      type: "input",
+      name: "name",
+      message: "Nom complet:",
+      validate: (input) => input.length > 0 || "Le nom est requis"
+    },
+    {
+      type: "input",
+      name: "email",
+      message: "Email:",
+      validate: (input) => {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(input) || "Email invalide";
+      }
+    },
+    {
+      type: "password",
+      name: "password",
+      message: "Mot de passe:",
+      mask: "*",
+      validate: (input) => input.length >= 6 || "Le mot de passe doit avoir au moins 6 caractères"
+    },
+    {
+      type: "list",
+      name: "role",
+      message: "Rôle:",
+      choices: [
+        { name: "👨‍🎓 Étudiant", value: "student" },
+        { name: "👨‍🏫 Professeur", value: "professor" },
+        { name: "👨‍💼 Administrateur", value: "admin" }
+      ]
+    }
+  ]);
+
+  const spinner = ora("Création de l'utilisateur...").start();
+  const client = createApiClient();
+  
+  try {
+    const response = await client.post("/admin/users", {
+      name: answers.name,
+      email: answers.email,
+      password: answers.password,
+      role: answers.role
+    });
+    
+    spinner.succeed("Utilisateur créé avec succès");
+    printSuccess(`Utilisateur créé: ${response.data.user.name} (${response.data.user.email})`);
+    printInfo(`ID: ${response.data.user.id}`);
+    return response.data.user;
+  } catch (error) {
+    spinner.fail("Échec de la création");
+    throw error;
+  }
+}
+
+// UPDATE User
+export async function updateUser(userId) {
+  const spinner = ora("Chargement des informations...").start();
+  const client = createApiClient();
+  
+  try {
+    // Fetch current user data
+    const usersResponse = await client.get("/admin/users");
+    const users = normalizeArrayResponse(usersResponse.data);
+    const user = users.find(u => u.id == userId);
+    
+    if (!user) {
+      spinner.fail(`Utilisateur ${userId} non trouvé`);
+      throw new Error("Utilisateur non trouvé");
+    }
+    
+    spinner.stop();
+    console.log(`\n✏️  Mise à jour de l'utilisateur: ${user.name}\n`);
+    
+    const answers = await inquirer.prompt([
+      {
+        type: "input",
+        name: "name",
+        message: "Nom complet:",
+        default: user.name,
+        validate: (input) => input.length > 0 || "Le nom est requis"
+      },
+      {
+        type: "input",
+        name: "email",
+        message: "Email:",
+        default: user.email,
+        validate: (input) => {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          return emailRegex.test(input) || "Email invalide";
+        }
+      },
+      {
+        type: "list",
+        name: "role",
+        message: "Rôle:",
+        default: user.role,
+        choices: [
+          { name: "👨‍🎓 Étudiant", value: "student" },
+          { name: "👨‍🏫 Professeur", value: "professor" },
+          { name: "👨‍💼 Administrateur", value: "admin" }
+        ]
+      },
+      {
+        type: "confirm",
+        name: "changePassword",
+        message: "Changer le mot de passe?",
+        default: false
+      }
+    ]);
+    
+    const updateData = {
+      name: answers.name,
+      email: answers.email,
+      role: answers.role
+    };
+    
+    if (answers.changePassword) {
+      const passwordAnswer = await inquirer.prompt([
+        {
+          type: "password",
+          name: "password",
+          message: "Nouveau mot de passe:",
+          mask: "*",
+          validate: (input) => input.length >= 6 || "Le mot de passe doit avoir au moins 6 caractères"
+        }
+      ]);
+      updateData.password = passwordAnswer.password;
+    }
+    
+    const updateSpinner = ora("Mise à jour de l'utilisateur...").start();
+    const response = await client.put(`/admin/users/${userId}`, updateData);
+    updateSpinner.succeed("Utilisateur mis à jour avec succès");
+    printSuccess(`Utilisateur mis à jour: ${response.data.user.name}`);
+    return response.data.user;
+  } catch (error) {
+    throw error;
+  }
+}
+
+// DELETE User
+export async function deleteUser(userId) {
+  const spinner = ora("Chargement des informations...").start();
+  const client = createApiClient();
+  
+  try {
+    // Fetch user to confirm
+    const usersResponse = await client.get("/admin/users");
+    const users = normalizeArrayResponse(usersResponse.data);
+    const user = users.find(u => u.id == userId);
+    
+    if (!user) {
+      spinner.fail(`Utilisateur ${userId} non trouvé`);
+      throw new Error("Utilisateur non trouvé");
+    }
+    
+    spinner.stop();
+    
+    // Confirmation
+    const { confirm } = await inquirer.prompt([
+      {
+        type: "confirm",
+        name: "confirm",
+        message: `⚠️  Êtes-vous sûr de vouloir supprimer l'utilisateur ${user.name} (${user.email})? Cette action est irréversible!`,
+        default: false
+      }
+    ]);
+    
+    if (!confirm) {
+      printInfo("Suppression annulée");
+      return;
+    }
+    
+    const deleteSpinner = ora("Suppression de l'utilisateur...").start();
+    await client.delete(`/admin/users/${userId}`);
+    deleteSpinner.succeed("Utilisateur supprimé avec succès");
+    printSuccess(`Utilisateur ${user.name} a été supprimé`);
+  } catch (error) {
+    throw error;
+  }
 }

@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+
+# Environment files
+.env
+.env.example
+.env.local
+.env.production
+
+# Documentation (keep README)
+*.md
+!README.md
+
+# Git files
+.git/
+.gitignore
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Old AI documentation (optional - can keep if wanted)
+OPENAI_SDK_INTEGRATION.md
+NVIDIA_API_FIX.md
+AI_PARSING_FIXES.md
+NVIDIA_AI_INTEGRATION.md
+FOLLOW_UP_FIX.md
+DEMO_MULTI_TURN.md
+MULTI_TURN_CONVERSATION.md
+
+# Test files
+tests/
+test/
+*.test.js
+*.spec.js
+
+# Build artifacts
+dist/
+build/

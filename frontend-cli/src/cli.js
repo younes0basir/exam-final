@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { Command } from "commander";
 import inquirer from "inquirer";
+import chalk from "chalk";
 import { registerAuthCommands } from "./commands/auth.js";
 import { registerProfessorCommands } from "./commands/professor.js";
 import { registerStudentCommands } from "./commands/student.js";
@@ -9,6 +10,10 @@ import { loginFlow, logoutFlow, whoamiFlow } from "./commands/auth.js";
 import { listProfessorModules } from "./commands/professor.js";
 import { getApiBaseUrl, setApiBaseUrl, getUser } from "./config.js";
 import { printInfo, printError, printWarning } from "./lib/output.js";
+import { showBanner, showSuggestions, getStatusIndicator } from "./lib/ui-enhanced.js";
+import { displaySmartSuggestions, getTimeBasedTip } from "./lib/smart-suggestions.js";
+import { createStatusBar, createDivider } from "./lib/responsive-ui.js";
+import { simpleAIAssistant } from "./lib/simple-ai.js";
 
 const program = new Command();
 
@@ -16,7 +21,7 @@ program
   .name("upf-cli")
   .description("CLI frontend pour l'application UPF")
   .version("0.1.0")
-  .option("--base-url <url>", "URL backend Laravel (default: http://localhost:8000)")
+  .option("--base-url <url>", "URL backend Laravel (default: http://13.49.72.180)")
   .hook("preAction", (thisCommand) => {
     const opts = thisCommand.opts();
     if (opts.baseUrl) {
@@ -29,7 +34,30 @@ program
   .description("Verifier configuration locale")
   .action(() => {
     printInfo(`API base URL: ${getApiBaseUrl()}`);
-    printInfo("Testez ensuite: upf-cli auth login");
+    printInfo("Testez ensuite: upf auth login");
+  });
+
+program
+  .command("tips")
+  .description("Afficher des conseils intelligents")
+  .action(() => {
+    const tip = getTimeBasedTip();
+    if (tip) {
+      console.log(chalk.cyan(tip));
+    }
+    displaySmartSuggestions();
+  });
+
+program
+  .command("ai")
+  .description("🤖 Assistant IA - Simple et Fiable!")
+  .action(async () => {
+    const user = getUser();
+    if (!user) {
+      printError("Veuillez vous connecter d'abord: upf auth login");
+      process.exit(1);
+    }
+    await simpleAIAssistant(user.role);
   });
 
 registerAuthCommands(program);
@@ -38,32 +66,50 @@ registerStudentCommands(program);
 registerAdminCommands(program);
 
 async function runHomeMenu() {
+  // Show banner on first load
+  showBanner();
+  
+  // Show time-based tip
+  const timeTip = getTimeBasedTip();
+  if (timeTip) {
+    console.log(chalk.cyan(timeTip));
+    console.log("");
+  }
+  
   while (true) {
     const user = getUser();
 
     console.clear();
-    console.log("===================================");
-    console.log("            UPF CLI");
-    console.log("===================================");
-    console.log(`API: ${getApiBaseUrl()}`);
-    console.log(`Session: ${user ? `${user.name} (${user.role})` : "non connecte"}`);
+    showBanner();
+    
+    // Display connection status with responsive status bar
+    const apiUrl = getApiBaseUrl();
+    const statusItems = [
+      { icon: getStatusIndicator('online').includes('Online') ? '🟢' : '🔴', label: 'API', value: apiUrl },
+      { icon: '👤', label: 'Session', value: user ? `${user.name} (${user.role})` : 'Non connecté' }
+    ];
+    
+    console.log(createStatusBar(statusItems));
     console.log("");
 
     const { action } = await inquirer.prompt([
       {
         type: "list",
         name: "action",
-        message: "Menu principal",
+        message: chalk.bold.cyan("Menu Principal"),
+        pageSize: 10,
         choices: [
-          { name: "Connexion", value: "login", disabled: !!user },
-          { name: "Qui suis-je", value: "whoami", disabled: !user },
-          { name: "Tableau de bord", value: "dashboard", disabled: !user },
-          { name: "Commandes professeur", value: "profMenu", disabled: !user || user.role !== "professor" },
-          { name: "Commandes étudiant", value: "studentMenu", disabled: !user || user.role !== "student" },
-          { name: "Commandes admin", value: "adminMenu", disabled: !user || user.role !== "admin" },
-          { name: "Deconnexion", value: "logout", disabled: !user },
-          { name: "Changer URL backend", value: "setApiUrl" },
-          { name: "Quitter", value: "exit" }
+          { name: "🔐 Connexion", value: "login", disabled: !!user },
+          { name: "👤 Qui suis-je", value: "whoami", disabled: !user },
+          { name: "📊 Tableau de bord", value: "dashboard", disabled: !user },
+          { name: "👨‍🏫 Commandes professeur", value: "profMenu", disabled: !user || user.role !== "professor" },
+          { name: "👨‍🎓 Commandes étudiant", value: "studentMenu", disabled: !user || user.role !== "student" },
+          { name: "👨‍💼 Commandes admin", value: "adminMenu", disabled: !user || user.role !== "admin" },
+          { name: "🚪 Deconnexion", value: "logout", disabled: !user },
+          { name: "⚙️ Changer URL backend", value: "setApiUrl" },
+          new inquirer.Separator(),
+          { name: "🤖 Assistant IA", value: "aiAssistant" },
+          { name: "❌ Quitter", value: "exit" }
         ]
       }
     ]);
@@ -94,14 +140,21 @@ async function runHomeMenu() {
         ]);
         setApiBaseUrl(url);
         printInfo(`URL backend mise a jour: ${url}`);
+      } else if (action === "aiAssistant") {
+        await simpleAIAssistant(user.role);
       } else if (action === "exit") {
+        console.log(chalk.green("\n👋 Au revoir! See you soon!\n"));
         return;
       }
     } catch (error) {
       printError(error?.response?.data?.message || error?.message || "Erreur inattendue.");
     }
 
-    await inquirer.prompt([{ type: "input", name: "continue", message: "Entrer pour continuer..." }]);
+    // Show smart suggestions after each action
+    if (action !== "exit") {
+      displaySmartSuggestions();
+      await inquirer.prompt([{ type: "input", name: "continue", message: chalk.cyan("Appuyez sur Entrée pour continuer...") }]);
+    }
   }
 }
 
@@ -194,13 +247,13 @@ async function studentSubMenu() {
         name: "action",
         message: "Menu Étudiant",
         choices: [
-          { name: "Tableau de bord", value: "dashboard" },
-          { name: "Mes notes", value: "grades" },
-          { name: "Emploi du temps", value: "timetable" },
-          { name: "Absences", value: "absences" },
-          { name: "Supports de cours", value: "materials" },
-          { name: "Demandes administratives", value: "requests" },
-          { name: "Retour au menu principal", value: "back" }
+          { name: "📊 Tableau de bord", value: "dashboard" },
+          { name: "📈 Mes notes", value: "grades" },
+          { name: "📅 Emploi du temps", value: "timetable" },
+          { name: "📋 Absences", value: "absences" },
+          { name: "📁 Supports de cours", value: "materials" },
+          { name: "📝 Demandes administratives", value: "requests" },
+          { name: "⬅️ Retour au menu principal", value: "back" }
         ]
       }
     ]);
@@ -222,8 +275,7 @@ async function studentSubMenu() {
         const { viewMaterials } = await import('./commands/student.js');
         await viewMaterials();
       } else if (action === "requests") {
-        const { viewRequests } = await import('./commands/student.js');
-        await viewRequests();
+        await manageRequestsInteractive();
       } else if (action === "back") {
         return;
       }
@@ -232,7 +284,7 @@ async function studentSubMenu() {
     }
 
     if (action !== "back") {
-      await inquirer.prompt([{ type: "input", name: "continue", message: "Entrer pour continuer..." }]);
+      await inquirer.prompt([{ type: "input", name: "continue", message: chalk.cyan("Appuyez sur Entrée pour continuer...") }]);
     }
   }
 }
@@ -245,14 +297,14 @@ async function adminSubMenu() {
         name: "action",
         message: "Menu Administrateur",
         choices: [
-          { name: "Tableau de bord", value: "dashboard" },
-          { name: "Utilisateurs", value: "users" },
-          { name: "Filières", value: "filieres" },
-          { name: "Demandes administratives", value: "requests" },
-          { name: "Emploi du temps", value: "timetable" },
-          { name: "Réservations", value: "reservations" },
-          { name: "Absences", value: "absences" },
-          { name: "Retour au menu principal", value: "back" }
+          { name: "📊 Tableau de bord", value: "dashboard" },
+          { name: "👥 Gérer les utilisateurs", value: "users" },
+          { name: "🎓 Filières", value: "filieres" },
+          { name: "📝 Demandes administratives", value: "requests" },
+          { name: "📅 Emploi du temps", value: "timetable" },
+          { name: "🏫 Réservations", value: "reservations" },
+          { name: "📋 Absences", value: "absences" },
+          { name: "⬅️ Retour au menu principal", value: "back" }
         ]
       }
     ]);
@@ -262,8 +314,7 @@ async function adminSubMenu() {
         const { viewAdminDashboard } = await import('./commands/admin.js');
         await viewAdminDashboard();
       } else if (action === "users") {
-        const { listUsers } = await import('./commands/admin.js');
-        await listUsers();
+        await manageUsersInteractive();
       } else if (action === "filieres") {
         const { listFilieres } = await import('./commands/admin.js');
         await listFilieres();
@@ -287,7 +338,125 @@ async function adminSubMenu() {
     }
 
     if (action !== "back") {
-      await inquirer.prompt([{ type: "input", name: "continue", message: "Entrer pour continuer..." }]);
+      await inquirer.prompt([{ type: "input", name: "continue", message: chalk.cyan("Appuyez sur Entrée pour continuer...") }]);
+    }
+  }
+}
+
+// ==================== INTERACTIVE CRUD MENUS ====================
+
+// Interactive User Management Menu
+async function manageUsersInteractive() {
+  while (true) {
+    const { action } = await inquirer.prompt([
+      {
+        type: "list",
+        name: "action",
+        message: "👥 Gestion des Utilisateurs",
+        choices: [
+          { name: "📋 Voir tous les utilisateurs", value: "list" },
+          { name: "📋 Voir les étudiants", value: "list_students" },
+          { name: "📋 Voir les professeurs", value: "list_professors" },
+          { name: "➕ Créer un nouvel utilisateur", value: "create" },
+          { name: "✏️ Modifier un utilisateur", value: "update" },
+          { name: "❌ Supprimer un utilisateur", value: "delete" },
+          { name: "⬅️ Retour au menu administrateur", value: "back" }
+        ]
+      }
+    ]);
+
+    try {
+      if (action === "list") {
+        const { listUsers } = await import('./commands/admin.js');
+        await listUsers({});
+      } else if (action === "list_students") {
+        const { listUsers } = await import('./commands/admin.js');
+        await listUsers({ role: 'student' });
+      } else if (action === "list_professors") {
+        const { listUsers } = await import('./commands/admin.js');
+        await listUsers({ role: 'professor' });
+      } else if (action === "create") {
+        const { createUser } = await import('./commands/admin.js');
+        await createUser();
+      } else if (action === "update") {
+        // First list users to choose from
+        const { listUsers } = await import('./commands/admin.js');
+        console.log(chalk.cyan("\nSélectionnez l'utilisateur à modifier:\n"));
+        await listUsers({});
+        
+        const { userId } = await inquirer.prompt([
+          {
+            type: "input",
+            name: "userId",
+            message: "Entrez l'ID de l'utilisateur à modifier:",
+            validate: (input) => input.length > 0 || "L'ID est requis"
+          }
+        ]);
+        
+        const { updateUser } = await import('./commands/admin.js');
+        await updateUser(userId);
+      } else if (action === "delete") {
+        // First list users to choose from
+        const { listUsers } = await import('./commands/admin.js');
+        console.log(chalk.red("\n⚠️ Sélectionnez l'utilisateur à supprimer:\n"));
+        await listUsers({});
+        
+        const { userId } = await inquirer.prompt([
+          {
+            type: "input",
+            name: "userId",
+            message: "Entrez l'ID de l'utilisateur à supprimer:",
+            validate: (input) => input.length > 0 || "L'ID est requis"
+          }
+        ]);
+        
+        const { deleteUser } = await import('./commands/admin.js');
+        await deleteUser(userId);
+      } else if (action === "back") {
+        return;
+      }
+    } catch (error) {
+      printError(error?.response?.data?.message || error?.message || "Erreur inattendue.");
+    }
+
+    if (action !== "back") {
+      await inquirer.prompt([{ type: "input", name: "continue", message: chalk.cyan("Appuyez sur Entrée pour continuer...") }]);
+    }
+  }
+}
+
+// Interactive Requests Management Menu for Students
+async function manageRequestsInteractive() {
+  while (true) {
+    const { action } = await inquirer.prompt([
+      {
+        type: "list",
+        name: "action",
+        message: "📝 Gestion des Demandes Administratives",
+        choices: [
+          { name: "📋 Voir mes demandes", value: "list" },
+          { name: "➕ Créer une nouvelle demande", value: "create" },
+          { name: "⬅️ Retour au menu étudiant", value: "back" }
+        ]
+      }
+    ]);
+
+    try {
+      if (action === "list") {
+        const { viewRequests } = await import('./commands/student.js');
+        await viewRequests({});
+      } else if (action === "create") {
+        const { createRequest } = await import('./commands/student.js');
+        await createRequest();
+      } else if (action === "back") {
+        return;
+      }
+    } catch (error) {
+      printError(error?.response?.data?.message || error?.message || "Erreur inattendue.");
+    }
+
+    if (action !== "back") {
+      await inquirer.prompt([{ type: "input", name: "continue", message: chalk.cyan("Appuyez sur Entrée pour continuer...") }]);
     }
   }
 }

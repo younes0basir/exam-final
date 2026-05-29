@@ -3,7 +3,7 @@ import Conf from "conf";
 export const config = new Conf({
   projectName: "upf-cli",
   defaults: {
-    apiBaseUrl: "http://localhost:8000",
+    apiBaseUrl: "http://13.49.72.180",
     token: null,
     user: null
   }

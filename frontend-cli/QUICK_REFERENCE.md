@@ -1,115 +1,323 @@
-# UPF CLI Quick Reference
+# 🚀 UPF CLI - Quick Reference Card
 
-## 🚀 Quick Start
+## Getting Started
 
+### First Time Setup
 ```bash
-npm install
-npm link
-upf-cli
+npm install          # Install dependencies
+npm link            # Link CLI globally
+upf auth login      # Login to system
 ```
 
-## 📋 Command Summary
-
-### Auth Commands
-| Command | Description |
-|---------|-------------|
-| `upf-cli auth login` | Login with email/password |
-| `upf-cli auth logout` | Logout and clear session |
-| `upf-cli auth whoami` | Show current user info |
-
-### Student Commands
-| Command | Description |
-|---------|-------------|
-| `upf-cli student dashboard` | View student dashboard |
-| `upf-cli student grades` | Check grades |
-| `upf-cli student timetable` | View schedule |
-| `upf-cli student absences` | Check absences |
-| `upf-cli student materials` | View course materials |
-| `upf-cli student requests` | Administrative requests |
-
-### Professor Commands
-| Command | Description |
-|---------|-------------|
-| `upf-cli professor dashboard` | View professor dashboard |
-| `upf-cli professor modules` | List teaching modules |
-| `upf-cli professor grades` | Manage grades (interactive) |
-| `upf-cli professor absences` | Validate absences (interactive) |
-| `upf-cli professor sessions` | View course sessions |
-| `upf-cli professor reservations` | Manage room reservations |
-
-### Admin Commands
-| Command | Description |
-|---------|-------------|
-| `upf-cli admin dashboard` | View admin dashboard |
-| `upf-cli admin users` | List all users |
-| `upf-cli admin filieres` | List academic programs |
-| `upf-cli admin requests` | Process requests (interactive) |
-| `upf-cli admin timetable` | View global timetable |
-| `upf-cli admin reservations` | Manage reservations (interactive) |
-| `upf-cli admin absences` | View all absences |
-
-## 🔧 Common Options
-
-- `--json`: Output in JSON format
-- `--base-url <url>`: Set API URL
-- `--role <role>`: Filter by role (admin only)
-- `--status <status>`: Filter by status
-
-## 💡 Tips
-
-1. **Interactive Mode**: Run `upf-cli` without arguments for menu-driven interface
-2. **JSON Output**: Use `--json` for scripting and data processing
-3. **Filters**: Use filter options to narrow down large datasets
-4. **Role-Based**: Commands are automatically filtered based on your role
-
-## 🎯 Interactive Features
-
-The following commands support interactive processing:
-
-- **Professor > Absences**: Validate/reject absence justifications
-- **Professor > Grades**: Select module and view/edit grades
-- **Admin > Requests**: Approve/reject administrative requests
-- **Admin > Reservations**: Approve/reject room reservations
-
-## 📊 Example Workflows
-
-### Student Checking Grades
+### Set Backend URL
 ```bash
-upf-cli auth login
-upf-cli student grades --json | jq '.[] | select(.note_finale < 10)'
+upf auth login --base-url http://13.49.72.180
 ```
 
-### Professor Managing Absences
+---
+
+## Essential Commands
+
+### 🔐 Authentication
 ```bash
-upf-cli auth login
-upf-cli professor absences
-# Follow interactive prompts to validate absences
+upf auth login              # Interactive login
+upf auth logout             # Logout
+upf auth whoami             # Check current session
 ```
 
-### Admin Processing Requests
+### 📊 Dashboard
 ```bash
-upf-cli auth login -e admin@upf.ma -p password
-upf-cli admin dashboard
-upf-cli admin requests --status pending
-# Follow interactive prompts to process requests
+upf                         # Interactive menu (RECOMMENDED)
+upf admin dashboard         # Admin stats
+upf professor dashboard     # Teaching overview
+upf student dashboard       # Academic summary
 ```
 
-## 🔍 Debugging
-
+### 💡 Smart Features
 ```bash
-# Check configuration
-upf-cli doctor
-
-# Verbose output (add to any command)
-upf-cli student grades --json 2>&1 | less
-
-# Test API connection
-curl http://localhost:8000/api
+upf tips                    # Get smart suggestions
+upf doctor                  # Check configuration
 ```
 
-## ⌨️ Keyboard Shortcuts (Interactive Mode)
+---
 
-- `↑/↓`: Navigate menu
-- `Enter`: Select option
-- `Ctrl+C`: Exit
-- Any key: Continue after command execution
+## Role-Specific Commands
+
+### 👨‍💼 Administrator
+
+#### User Management
+```bash
+upf admin users                     # List all users
+upf admin users --role student      # Filter students
+upf admin users --role professor    # Filter professors
+```
+
+#### Requests & Approvals
+```bash
+upf admin requests                  # Process requests (interactive)
+upf admin reservations              # Manage room bookings
+upf admin absences                  # Monitor attendance
+```
+
+#### Academic Programs
+```bash
+upf admin filieres                  # List programs
+upf admin timetable                 # Global schedule
+```
+
+---
+
+### 👨‍🏫 Professor
+
+#### Teaching Management
+```bash
+upf professor modules               # My courses
+upf professor sessions              # Course sessions
+upf professor grades                # Manage grades (interactive)
+upf professor absences              # Validate absences
+```
+
+#### Reservations
+```bash
+upf professor reservations          # Room bookings
+```
+
+---
+
+### 👨‍🎓 Student
+
+#### Academic Information
+```bash
+upf student grades                  # My grades
+upf student timetable               # My schedule
+upf student absences                # My attendance
+upf student materials               # Course materials
+```
+
+#### Administrative
+```bash
+upf student requests                # Submit/view requests
+```
+
+---
+
+## Smart Features Guide
+
+### 🧠 Smart Suggestions
+- Appear automatically after each action
+- Based on your role (Admin/Professor/Student)
+- Priority-ranked by importance
+- Include emoji icons for quick recognition
+
+### ⏰ Time-Based Tips
+- **Morning** (6AM-12PM): Daily planning tips
+- **Afternoon** (12PM-5PM): Mid-day reminders
+- **Evening** (5PM+): End-of-day tasks
+
+### 🎨 Visual Indicators
+- ● Green = Online/Success
+- ● Red = Offline/Error
+- ● Yellow = Warning/Pending
+- ● Cyan = Info/Ready
+
+---
+
+## Pro Tips
+
+### Efficiency Hacks
+1. **Use Interactive Mode**: `upf` is faster than typing full commands
+2. **Follow Suggestions**: Smart suggestions are optimized for your workflow
+3. **Export Data**: Add `--json` flag to any command
+4. **Check Tips**: Run `upf tips` for contextual advice
+5. **Quick Config**: Use `upf doctor` to verify setup
+
+### JSON Export Examples
+```bash
+upf student grades --json > grades.json
+upf admin users --role student --json | jq '.[].email'
+upf professor modules --json
+```
+
+### Filtering Data
+```bash
+upf admin users --role student
+upf admin requests --status pending
+upf professor grades --module-id 1
+```
+
+---
+
+## Troubleshooting
+
+### Connection Issues
+```bash
+# Test backend connectivity
+curl http://13.49.72.180/api
+
+# Check CLI config
+upf doctor
+
+# Update URL
+upf auth login --base-url http://13.49.72.180
+```
+
+### Session Problems
+```bash
+# Clear and re-login
+upf auth logout
+upf auth login
+```
+
+### Performance
+```bash
+# Use JSON for faster output
+upf admin users --json
+
+# Filter large datasets
+upf admin users --role student
+```
+
+---
+
+## Keyboard Navigation (Interactive Menu)
+
+- **Arrow Keys**: Navigate menu
+- **Enter**: Select option
+- **Ctrl+C**: Cancel/Exit
+- **q**: Quit (in submenus)
+- **b**: Back (in submenus)
+
+---
+
+## Common Workflows
+
+### 👨‍💼 Admin Daily Routine
+```bash
+upf                              # Open menu
+→ Dashboard                      # Check stats
+→ Requests                       # Process documents
+→ Users                          # Review registrations
+→ Absences                       # Monitor attendance
+```
+
+### 👨‍🏫 Professor Workflow
+```bash
+upf                              # Open menu
+→ Dashboard                      # View schedule
+→ Modules                        # See courses
+→ Sessions                       # Update cahier
+→ Grades                         # Enter scores
+```
+
+### 👨‍🎓 Student Routine
+```bash
+upf                              # Open menu
+→ Dashboard                      # Overview
+→ Grades                         # Check scores
+→ Timetable                      # View schedule
+→ Materials                      # Download files
+```
+
+---
+
+## Configuration
+
+### View Current Settings
+```bash
+upf doctor
+```
+
+### Change Backend URL
+```bash
+# Method 1: Via login
+upf auth login --base-url <URL>
+
+# Method 2: Via menu
+upf → "Changer URL backend"
+```
+
+### Config File Location
+- Windows: `%APPDATA%\upf-cli\config.json`
+- Mac/Linux: `~/.config/upf-cli/config.json`
+
+---
+
+## Command History
+
+View command history:
+```bash
+# Windows
+type %USERPROFILE%\.upf-cli-history
+
+# Mac/Linux
+cat ~/.upf-cli-history
+```
+
+---
+
+## Help & Support
+
+### Built-in Help
+```bash
+upf --help                # Main help
+upf auth --help           # Auth help
+upf admin --help          # Admin help
+```
+
+### Documentation
+- README.md - Full documentation
+- SMART_FEATURES.md - Smart features guide
+- VISUAL_GUIDE.md - Visual examples
+- ENHANCEMENT_SUMMARY.md - What's new
+
+---
+
+## Quick Stats
+
+| Feature | Command |
+|---------|---------|
+| Login | `upf auth login` |
+| Dashboard | `upf` → Dashboard |
+| Tips | `upf tips` |
+| Config | `upf doctor` |
+| Logout | `upf auth logout` |
+| Help | `upf --help` |
+
+---
+
+## Emoji Legend
+
+- 📊 Dashboard/Statistics
+- 👥 Users/People
+- 📝 Requests/Documents
+- 📋 Absences/Attendance
+- 📚 Teaching/Courses
+- 📖 Modules/Subjects
+- ✏️ Grades/Scores
+- 📅 Sessions/Schedule
+- 🎓 Student/Academic
+- 📈 Grades/Performance
+- ⏰ Timetable/Time
+- 📁 Materials/Files
+- 💡 Tips/Suggestions
+- ℹ️ Information
+- ✓ Success
+- ✗ Error
+- ⚠ Warning
+
+---
+
+## Version Info
+
+Current Version: 0.2.0 (Smart Edition)
+
+Check version:
+```bash
+upf --version
+```
+
+---
+
+**Remember**: The interactive mode (`upf`) is the easiest way to use the CLI!
+
+*Made with ❤️ for UPF University*

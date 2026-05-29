@@ -1,4 +1,5 @@
 import ora from "ora";
+import inquirer from "inquirer";
 import { createApiClient } from "../lib/http.js";
 import { printError, printTable, printSuccess, printInfo } from "../lib/output.js";
 
@@ -78,13 +79,18 @@ export function registerStudentCommands(program) {
 
   student
     .command("requests")
-    .description("Voir les demandes administratives")
+    .description("Gérer les demandes administratives (CRUD)")
     .option("--json", "Sortie JSON")
+    .option("--create", "Créer une nouvelle demande")
     .action(async (options) => {
       try {
-        await viewRequests(options);
+        if (options.create) {
+          await createRequest();
+        } else {
+          await viewRequests(options);
+        }
       } catch (error) {
-        printError(error?.response?.data?.message || "Erreur lors du chargement des demandes.");
+        printError(error?.response?.data?.message || "Erreur lors de l'opération sur les demandes.");
         process.exitCode = 1;
       }
     });
@@ -263,4 +269,51 @@ export async function viewRequests(options = {}) {
   ]);
   printTable(["ID", "Type", "Statut", "Date"], rows);
   return requests;
+}
+
+// ==================== CRUD OPERATIONS ====================
+
+// CREATE Administrative Request
+export async function createRequest() {
+  console.log("\n📝 Créer une demande administrative\n");
+  
+  const answers = await inquirer.prompt([
+    {
+      type: "list",
+      name: "type",
+      message: "Type de demande:",
+      choices: [
+        { name: "📄 Attestation de scolarité", value: "attestation_scolarite" },
+        { name: "📊 Relevé de notes", value: "releve_notes" },
+        { name: "🎓 Attestation de réussite", value: "attestation_reussite" },
+        { name: "📋 Certificat de présence", value: "certificat_presence" },
+        { name: "📝 Autre", value: "autre" }
+      ]
+    },
+    {
+      type: "input",
+      name: "description",
+      message: "Description (optionnel):",
+      default: ""
+    }
+  ]);
+
+  const spinner = ora("Soumission de la demande...").start();
+  const client = createApiClient();
+  
+  try {
+    const response = await client.post("/student/requests", {
+      type: answers.type,
+      description: answers.description || null
+    });
+    
+    spinner.succeed("Demande soumise avec succès");
+    printSuccess(`Demande créée: ${response.data.request.type}`);
+    printInfo(`ID: ${response.data.request.id}`);
+    printInfo(`Statut: ${response.data.request.statut}`);
+    return response.data.request;
+  } catch (error) {
+    spinner.fail("Échec de la soumission");
+    throw error;
+  }
 }

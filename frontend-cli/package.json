@@ -1,23 +1,55 @@
 {
   "name": "upf-cli",
-  "version": "0.2.0",
-  "description": "CLI frontend for UPF university management API",
+  "version": "0.7.0",
+  "description": "UPF University Management System CLI - Manage students, professors, and admin operations with AI assistant",
   "type": "module",
   "bin": {
-    "upf-cli": "./src/cli.js",
-    "upf": "./src/cli.js"
+    "upf-cli": "src/cli.js",
+    "upf": "src/cli.js"
   },
   "scripts": {
     "dev": "node ./src/cli.js",
     "start": "node ./src/cli.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/younes0basir/exam-final.git"
+  },
+  "keywords": [
+    "upf",
+    "university",
+    "cli",
+    "management",
+    "students",
+    "professors",
+    "ai-assistant"
+  ],
+  "author": "Younes Basir",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/younes0basir/exam-final/issues"
+  },
+  "homepage": "https://github.com/younes0basir/exam-final/tree/main/frontend-cli#readme",
   "dependencies": {
     "axios": "^1.8.4",
+    "boxen": "^8.0.0",
     "chalk": "^5.4.1",
     "cli-table3": "^0.6.5",
     "commander": "^14.0.0",
     "conf": "^14.0.0",
+    "dotenv": "^17.4.2",
+    "figlet": "^1.7.0",
+    "gradient-string": "^3.0.0",
     "inquirer": "^12.6.3",
-    "ora": "^8.2.0"
-  }
+    "ora": "^8.2.0",
+    "terminal-link": "^3.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "files": [
+    "src/",
+    "README.md",
+    "LICENSE"
+  ]
 }

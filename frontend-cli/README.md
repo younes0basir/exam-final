@@ -1,5 +1,46 @@
 # UPF CLI - University Management System Command Line Interface
 
+## 🌟 NEW: Smart Edition v0.7.0 - Simple & Reliable AI!
+
+The CLI now features a **simple, fast, and reliable AI assistant** (no API needed):
+- 🤖 **Simple AI Assistant** - Instant responses, always works offline
+- ⚡ **Lightning Fast** - <100ms response time (vs 2-3s with API)
+- 🎯 **Reliable** - No JSON parsing errors, no null crashes
+- 💬 **Direct Questions** - Asks for missing info clearly
+- ✅ **Safe** - Confirms destructive actions
+- 📱 **Responsive Layouts** - Works on small and large screens
+- ✨ **Beautiful ASCII Art Banner** - Adapts to terminal width
+- 📱 **Responsive Layouts** - Works on small and large screens
+- 🧠 **Smart Suggestions** based on your role and context
+- ⏰ **Time-Based Tips** for contextual guidance
+- 🎨 **Enhanced UI** with color-coded status indicators
+- 📊 **Real-Time Feedback** with animated progress bars
+- 🔧 **Full CRUD Operations** - Create, Read, Update, Delete data!
+- 🖱️ **Interactive Menus** - No need to remember commands, just navigate!
+- 📐 **Smart Tables** - Auto-adjust column widths
+- 🎯 **Enhanced Navigation** - Page scrolling and separators
+
+### New AI Features:
+- 🗣️ **Natural Language Processing** - "Créer un utilisateur", "Voir mes notes"
+- 🧩 **Intent Recognition** - Understands what you want to do
+- 🔍 **Entity Extraction** - Automatically detects IDs, roles, dates
+- 🛡️ **Permission Checking** - Only allows actions you're authorized to do
+- 💡 **Smart Suggestions** - Helps when it doesn't understand
+- 🌍 **Bilingual** - French and English support
+
+📚 **Documentation:**
+- [SIMPLE_AI_REBUILD.md](./SIMPLE_AI_REBUILD.md) - **NEW!** Simple AI architecture
+- [MULTI_TURN_CONVERSATION.md](./MULTI_TURN_CONVERSATION.md) - Conversation patterns
+- [AI_ASSISTANT_GUIDE.md](./AI_ASSISTANT_GUIDE.md) - General AI guide
+- [RESPONSIVE_UI_GUIDE.md](./RESPONSIVE_UI_GUIDE.md) - Complete responsive UI guide
+- [INTERACTIVE_CRUD_GUIDE.md](./INTERACTIVE_CRUD_GUIDE.md) - Complete interactive menu guide
+- [SMART_FEATURES.md](./SMART_FEATURES.md) - Complete smart features guide
+- [CRUD_OPERATIONS.md](./CRUD_OPERATIONS.md) - Full CRUD operations guide
+- [VISUAL_GUIDE.md](./VISUAL_GUIDE.md) - Before/after visual comparison
+- [QUICK_REFERENCE.md](./QUICK_REFERENCE.md) - Quick command reference
+
+---
+
 A powerful command-line interface for managing university operations at UPF (Université Privée de Fès).
 
 ## Features
@@ -150,7 +191,7 @@ upf-cli admin absences
 ### Quick Start
 ```bash
 # 1. Set API URL (if different from default)
-upf-cli --base-url http://localhost:8000
+upf-cli --base-url http://13.49.72.180
 
 # 2. Login
 upf-cli auth login
@@ -186,7 +227,7 @@ upf-cli admin users --json
 ## Configuration
 
 The CLI stores configuration in a local config file:
-- API base URL (default: http://localhost:8000)
+- API base URL (default: http://13.49.72.180)
 - Authentication token
 - User session data
 
@@ -290,7 +331,7 @@ export async function doSomething(options = {}) {
 ### Connection Issues
 ```bash
 # Verify backend is running
-curl http://localhost:8000/api
+curl http://13.49.72.180/api
 
 # Check configured URL
 upf-cli doctor
