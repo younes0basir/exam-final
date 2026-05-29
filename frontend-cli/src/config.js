@@ -1,9 +1,12 @@
 import Conf from "conf";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 export const config = new Conf({
   projectName: "upf-cli",
   defaults: {
-    apiBaseUrl: "http://13.49.72.180",
+    apiBaseUrl: process.env.API_BASE_URL || "http://13.49.72.180",
     token: null,
     user: null
   }

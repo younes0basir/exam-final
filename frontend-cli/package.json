@@ -1,6 +1,6 @@
 {
-  "name": "upf-cli",
-  "version": "0.7.0",
+  "name": "@basir97/upf-cli",
+  "version": "0.7.1",
   "description": "UPF University Management System CLI - Manage students, professors, and admin operations with AI assistant",
   "type": "module",
   "bin": {
@@ -9,7 +9,9 @@
   },
   "scripts": {
     "dev": "node ./src/cli.js",
-    "start": "node ./src/cli.js"
+    "start": "node ./src/cli.js",
+    "update-npm": "node scripts/update-npm.js",
+    "publish": "npm publish --access public"
   },
   "repository": {
     "type": "git",

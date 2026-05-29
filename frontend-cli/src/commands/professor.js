@@ -318,7 +318,7 @@ async function processAbsenceInteractive(absences) {
 export async function viewSessions(options = {}) {
   const spinner = ora("Chargement des sessions...").start();
   const client = createApiClient();
-  const response = await client.get("/professor/sessions");
+  const response = await client.get("/professor/session-log");
   spinner.stop();
 
   const sessions = normalizeArrayResponse(response.data);
